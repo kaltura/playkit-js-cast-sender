@@ -5,7 +5,7 @@ import {cast, ui} from 'kaltura-player-js';
 const {style, Components} = ui;
 const {RemotePlayerUI} = cast;
 
-class CastUi extends RemotePlayerUI {
+class CastUI extends RemotePlayerUI {
   playbackUI(props: Object): any {
     return (
       <div className={style.playbackGuiWWrapper}>
@@ -64,4 +64,4 @@ class CastUi extends RemotePlayerUI {
   }
 }
 
-export {CastUi};
+export {CastUI};

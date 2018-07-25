@@ -3,7 +3,7 @@ import {cast as remote, core} from 'kaltura-player-js';
 import {CastStateManager} from './cast-state-manager';
 import {CastTracksManager} from './cast-tracks-manager';
 import {CastPlaybackEngine} from './cast-playack-engine';
-import {CastUi} from './cast-ui';
+import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
 
 const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType} = core;
@@ -28,7 +28,7 @@ class CastPlayer extends BaseRemotePlayer {
   _castContext: Object;
   _castRemotePlayer: Object;
   _castRemotePlayerController: Object;
-  _ui: CastUi;
+  _ui: CastUI;
   _stateManager: CastStateManager;
   _tracksManager: CastTracksManager;
   _engine: CastPlaybackEngine;
@@ -249,7 +249,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._castRemotePlayer = new cast.framework.RemotePlayer();
     this._castRemotePlayerController = new cast.framework.RemotePlayerController(this._castRemotePlayer);
 
-    this._ui = new CastUi();
+    this._ui = new CastUI();
     this._tracksManager = new CastTracksManager(this._castRemotePlayer);
     this._engine = new CastPlaybackEngine(this._castRemotePlayer, this._castRemotePlayerController);
     this._stateManager = new CastStateManager(this._castRemotePlayer, this._castRemotePlayerController);
