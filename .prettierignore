@@ -1,0 +1,6 @@
+/dist
+yarn.lock
+yarn-error.log
+/src/index.html
+CHANGELOG.md
+LICENSE
