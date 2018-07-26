@@ -262,12 +262,15 @@ class CastTracksManager extends FakeEventTarget {
       const isTextStyleChanged = () => {
         const localTextStyle = TextStyleConverter.toCastTextStyle(this.textStyle);
         const remoteTextStyle = mediaSession.media.textTrackStyle;
-        return !(
-          localTextStyle.backgroundColor === remoteTextStyle.backgroundColor &&
-          localTextStyle.fontFamily === remoteTextStyle.fontFamily &&
-          localTextStyle.fontScale === remoteTextStyle.fontScale &&
-          localTextStyle.foregroundColor === remoteTextStyle.foregroundColor
-        );
+        if (remoteTextStyle) {
+          return !(
+            localTextStyle.backgroundColor === remoteTextStyle.backgroundColor &&
+            localTextStyle.fontFamily === remoteTextStyle.fontFamily &&
+            localTextStyle.fontScale === remoteTextStyle.fontScale &&
+            localTextStyle.foregroundColor === remoteTextStyle.foregroundColor
+          );
+        }
+        return false;
       };
       const isActiveTrackIdsChanged = () => {
         return !(
