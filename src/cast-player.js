@@ -93,16 +93,9 @@ class CastPlayer extends BaseRemotePlayer {
   play(): void {
     if (this.paused) {
       this._engine.play();
-    } else if (this._ended && this._mediaInfo) {
+    } else if (this._ended && this.getMediaInfo()) {
       this.loadMedia(this._mediaInfo);
     }
-  }
-
-  isLive(): boolean {
-    if (this._castRemotePlayer.mediaInfo) {
-      return this._castRemotePlayer.mediaInfo.streamType === chrome.cast.media.StreamType.LIVE;
-    }
-    return false;
   }
 
   pause(): void {
@@ -128,6 +121,40 @@ class CastPlayer extends BaseRemotePlayer {
     this._tracksManager.destroy();
     this._engine.destroy();
     this._stateManager.destroy();
+  }
+
+  isLive(): boolean {
+    const mediaInfo = this._castRemotePlayer.mediaInfo;
+    return mediaInfo ? mediaInfo.streamType === chrome.cast.media.StreamType.LIVE : false;
+  }
+
+  isDvr(): boolean {
+    if (this.isLive()) {
+      const mediaInfo = this._castRemotePlayer.mediaInfo;
+      return mediaInfo.customData && mediaInfo.customData.isDvr;
+    }
+    return false;
+  }
+
+  seekToLiveEdge(): void {
+    const mediaSession = this._castSession.getMediaSession();
+    if (mediaSession) {
+      const range = mediaSession.liveSeekableRange;
+      if (range) {
+        this._engine.currentTime = range.end;
+      }
+    }
+  }
+
+  getStartTimeOfDvrWindow(): number {
+    const mediaSession = this._castSession.getMediaSession();
+    if (mediaSession) {
+      const range = mediaSession.liveSeekableRange;
+      if (range) {
+        return range.start;
+      }
+    }
+    return 0;
   }
 
   getTracks(type?: string): Array<Track> {
@@ -204,7 +231,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   get src(): ?string {
     if (this._castRemotePlayer.mediaInfo) {
-      return this._castRemotePlayer.mediaInfo.contentId;
+      return this._castRemotePlayer.mediaInfo.contentUrl;
     }
   }
 
@@ -311,8 +338,19 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.listen(this._engine, EventType.MUTE_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.DURATION_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.ENDED, e => {
-      this._ended = true;
-      this.dispatchEvent(e);
+      if (this.isLive()) {
+        const mediaSession = this._castSession.getMediaSession();
+        if (mediaSession) {
+          const range = mediaSession.liveSeekableRange;
+          if (range && range.isLiveDone) {
+            this._ended = true;
+            this.dispatchEvent(e);
+          }
+        }
+      } else {
+        this._ended = true;
+        this.dispatchEvent(e);
+      }
     });
     this._eventManager.listen(this._tracksManager, EventType.TRACKS_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.TEXT_TRACK_CHANGED, e => this.dispatchEvent(e));
@@ -357,7 +395,7 @@ class CastPlayer extends BaseRemotePlayer {
       new FakeEvent(EventType.SOURCE_SELECTED, {
         selectedSource: [
           {
-            url: this._castRemotePlayer.mediaInfo.contentId,
+            url: this._castRemotePlayer.mediaInfo.contentUrl,
             mimetype: this._castRemotePlayer.mediaInfo.contentType
           }
         ]
