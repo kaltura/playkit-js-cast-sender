@@ -131,7 +131,10 @@ class CastPlayer extends BaseRemotePlayer {
   isDvr(): boolean {
     if (this.isLive()) {
       const mediaInfo = this._castRemotePlayer.mediaInfo;
-      return mediaInfo.customData && mediaInfo.customData.isDvr;
+      const playbackInfo = mediaInfo.customData.playbackInfo;
+      if (playbackInfo) {
+        return playbackInfo.isDvr;
+      }
     }
     return false;
   }
