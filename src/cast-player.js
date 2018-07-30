@@ -6,7 +6,6 @@ import {CastPlaybackEngine} from './cast-playack-engine';
 import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
 
-export const INTERVAL_FREQUENCY = 500;
 const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType, AbrMode} = core;
 const {
   BaseRemotePlayer,
@@ -19,12 +18,19 @@ const {
   TextStyleConverter
 } = remote;
 
+export const INTERVAL_FREQUENCY = 500;
+export const SECONDS_TO_MINUTES_DIVIDER = 60;
+
 class CastPlayer extends BaseRemotePlayer {
   static Type: string = 'chromecast';
 
   static isSupported(): boolean {
     return Env.browser.name === 'Chrome';
   }
+
+  static defaultConfig: Object = {
+    dvrThreshold: 5
+  };
 
   _castContext: Object;
   _castRemotePlayer: Object;
@@ -131,10 +137,14 @@ class CastPlayer extends BaseRemotePlayer {
 
   isDvr(): boolean {
     if (this.isLive()) {
-      const mediaInfo = this._castRemotePlayer.mediaInfo;
-      const playbackInfo = mediaInfo.customData.playbackInfo;
-      if (playbackInfo) {
-        return playbackInfo.isDvr;
+      const mediaSession = this._castSession.getMediaSession();
+      if (mediaSession) {
+        const range = mediaSession.liveSeekableRange;
+        if (range) {
+          const startMinutes = range.start / SECONDS_TO_MINUTES_DIVIDER;
+          const endMinutes = range.end / SECONDS_TO_MINUTES_DIVIDER;
+          return endMinutes - startMinutes > this._config.dvrThreshold;
+        }
       }
     }
     return false;
