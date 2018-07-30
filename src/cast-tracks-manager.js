@@ -3,33 +3,27 @@ import {cast as remote, core} from 'kaltura-player-js';
 
 const {TextStyleConverter} = remote;
 const {Track, TextStyle, AudioTrack, VideoTrack, TextTrack, Utils, TrackType, EventType, FakeEvent, FakeEventTarget} = core;
+const TRACK_TYPE_TO_INSTANCE: {[type: string]: Track} = {
+  [TrackType.AUDIO]: AudioTrack,
+  [TrackType.VIDEO]: VideoTrack,
+  [TrackType.TEXT]: TextTrack
+};
 
 class CastTracksManager extends FakeEventTarget {
   _remotePlayer: Object;
   _castSession: Object;
-  _onMediaStatusUpdate: Function;
+  _mediaSession: Object;
   _textStyle: TextStyle;
   _activeTrackIds: Array<number> = [];
   _tracks: Array<Track> = [];
-  _typeToInstanceMap: {[type: string]: Track} = {
-    [TrackType.AUDIO]: AudioTrack,
-    [TrackType.VIDEO]: VideoTrack,
-    [TrackType.TEXT]: TextTrack
-  };
+  _onMediaStatusUpdate: Function;
 
   constructor(remotePlayer: Object) {
     super();
     this._remotePlayer = remotePlayer;
+    this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
     this._textStyle = new TextStyle();
     this._onMediaStatusUpdate = this._onMediaStatusUpdate.bind(this);
-    return new Proxy(this, {
-      get: (obj: CastTracksManager, prop: string) => {
-        if (!this._castSession) {
-          this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-        }
-        return obj[prop];
-      }
-    });
   }
 
   parseTracks(): void {
@@ -44,7 +38,8 @@ class CastTracksManager extends FakeEventTarget {
       this._tracks = audioTracks.concat(videoTracks).concat(textTracks);
       this._addTextTrackOffOption();
     }
-    this._castSession.getMediaSession().addUpdateListener(this._onMediaStatusUpdate);
+    this._mediaSession = this._castSession.getMediaSession();
+    this._mediaSession.addUpdateListener(this._onMediaStatusUpdate);
     this.dispatchEvent(new FakeEvent(EventType.TRACKS_CHANGED, {tracks: this._tracks}));
   }
 
@@ -83,16 +78,15 @@ class CastTracksManager extends FakeEventTarget {
   destroy(): void {
     this._tracks = [];
     this._activeTrackIds = [];
-    const mediaSession = this._castSession.getMediaSession();
-    if (mediaSession) {
-      mediaSession.removeUpdateListener(this._onMediaStatusUpdate);
+    if (this._mediaSession) {
+      this._mediaSession.removeUpdateListener(this._onMediaStatusUpdate);
     }
   }
 
   set textStyle(style: TextStyle): void {
     const textTrackStyle = TextStyleConverter.toCastTextStyle(style);
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(null, textTrackStyle);
-    this._castSession.getMediaSession().editTracksInfo(
+    this._mediaSession.editTracksInfo(
       tracksInfoRequest,
       () => {
         this._textStyle = style;
@@ -207,7 +201,7 @@ class CastTracksManager extends FakeEventTarget {
       this._activeTrackIds.push(newTrack.id);
     }
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this._activeTrackIds);
-    this._castSession.getMediaSession().editTracksInfo(
+    this._mediaSession.editTracksInfo(
       tracksInfoRequest,
       () => {
         this._markActiveTrack(currentTrack, false);
@@ -249,19 +243,18 @@ class CastTracksManager extends FakeEventTarget {
     return !type
       ? this._tracks
       : this._tracks.filter(track => {
-          if (type && this._typeToInstanceMap[type]) {
-            return track instanceof this._typeToInstanceMap[type];
+          if (type && TRACK_TYPE_TO_INSTANCE[type]) {
+            return track instanceof TRACK_TYPE_TO_INSTANCE[type];
           }
           return true;
         });
   }
 
   _onMediaStatusUpdate(): void {
-    const mediaSession = this._castSession.getMediaSession();
-    if (mediaSession) {
+    if (this._mediaSession) {
       const isTextStyleChanged = () => {
         const localTextStyle = TextStyleConverter.toCastTextStyle(this.textStyle);
-        const remoteTextStyle = mediaSession.media.textTrackStyle;
+        const remoteTextStyle = this._mediaSession.media.textTrackStyle;
         if (remoteTextStyle) {
           return !(
             localTextStyle.backgroundColor === remoteTextStyle.backgroundColor &&
@@ -273,20 +266,23 @@ class CastTracksManager extends FakeEventTarget {
         return false;
       };
       const isActiveTrackIdsChanged = () => {
-        return !(
-          this._activeTrackIds.length === mediaSession.activeTrackIds.length &&
-          this._activeTrackIds.every((value, index) => value === mediaSession.activeTrackIds[index])
-        );
+        if (this._mediaSession.activeTrackIds) {
+          return !(
+            this._activeTrackIds.length === this._mediaSession.activeTrackIds.length &&
+            this._activeTrackIds.every((value, index) => value === this._mediaSession.activeTrackIds[index])
+          );
+        }
+        return false;
       };
       if (isActiveTrackIdsChanged()) {
-        const diffIds = mediaSession.activeTrackIds.filter(i => !this._activeTrackIds.includes(i));
+        const diffIds = this._mediaSession.activeTrackIds.filter(i => !this._activeTrackIds.includes(i));
         diffIds.forEach(id => {
           const track = this._tracks.find(t => t.id === id);
           this.selectTrack(track);
         });
       }
       if (isTextStyleChanged()) {
-        const style = TextStyleConverter.toPlayerTextStyle(mediaSession.media.textTrackStyle);
+        const style = TextStyleConverter.toPlayerTextStyle(this._mediaSession.media.textTrackStyle);
         this._textStyle = style;
         this.dispatchEvent(new FakeEvent(EventType.TEXT_STYLE_CHANGED, {textStyle: style}));
       }

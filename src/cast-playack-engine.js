@@ -6,6 +6,7 @@ const {EventType, FakeEvent, FakeEventTarget} = core;
 class CastPlaybackEngine extends FakeEventTarget {
   _remotePlayer: Object;
   _remotePlayerController: Object;
+  _mediaSession: Object;
   _muted: boolean = false;
   _volume: number = 1;
   _paused: boolean = false;
@@ -17,21 +18,21 @@ class CastPlaybackEngine extends FakeEventTarget {
   _onDurationChanged: Function;
   _onVolumeLevelChanged: Function;
   _onIsMutedChanged: Function;
+  _onIsMediaLoadedChanged: Function;
+  _onLiveCurrentTimeChanged: Function;
 
   constructor(remotePlayer: Object, remotePlayerController: Object) {
     super();
     this._remotePlayer = remotePlayer;
     this._remotePlayerController = remotePlayerController;
-    this._onCurrentTimeChanged = this._onCurrentTimeChanged.bind(this);
-    this._onIsPausedChanged = this._onIsPausedChanged.bind(this);
-    this._onDurationChanged = this._onDurationChanged.bind(this);
-    this._onVolumeLevelChanged = this._onVolumeLevelChanged.bind(this);
-    this._onIsMutedChanged = this._onIsMutedChanged.bind(this);
+    this._bindEvents();
     this._toggleListeners(true);
   }
 
   reset(): void {
     this._resetFlags();
+    this._toggleListeners(false);
+    this._toggleListeners(true);
   }
 
   destroy(): void {
@@ -109,9 +110,19 @@ class CastPlaybackEngine extends FakeEventTarget {
     this._seeking = false;
   }
 
+  _bindEvents(): void {
+    this._onCurrentTimeChanged = this._onCurrentTimeChanged.bind(this);
+    this._onIsPausedChanged = this._onIsPausedChanged.bind(this);
+    this._onDurationChanged = this._onDurationChanged.bind(this);
+    this._onVolumeLevelChanged = this._onVolumeLevelChanged.bind(this);
+    this._onIsMutedChanged = this._onIsMutedChanged.bind(this);
+    this._onIsMediaLoadedChanged = this._onIsMediaLoadedChanged.bind(this);
+    this._onLiveCurrentTimeChanged = this._onLiveCurrentTimeChanged.bind(this);
+  }
+
   _toggleListeners(listen: boolean): void {
     const listeners = {
-      [cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED]: this._onCurrentTimeChanged,
+      [cast.framework.RemotePlayerEventType.IS_MEDIA_LOADED_CHANGED]: this._onIsMediaLoadedChanged,
       [cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED]: this._onIsPausedChanged,
       [cast.framework.RemotePlayerEventType.DURATION_CHANGED]: this._onDurationChanged,
       [cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED]: this._onVolumeLevelChanged,
@@ -121,6 +132,27 @@ class CastPlaybackEngine extends FakeEventTarget {
       Object.keys(listeners).forEach(e => this._remotePlayerController.addEventListener(e, listeners[e]));
     } else {
       Object.keys(listeners).forEach(e => this._remotePlayerController.removeEventListener(e, listeners[e]));
+      this._remotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, this._onCurrentTimeChanged);
+      if (this._mediaSession) {
+        this._mediaSession.removeUpdateListener(this._onLiveCurrentTimeChanged);
+      }
+    }
+  }
+
+  _onIsMediaLoadedChanged(isMediaLoadedEvent: Object): void {
+    const onMediaInfoChanged = () => {
+      this._remotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onMediaInfoChanged);
+      if (this._remotePlayer.mediaInfo.streamType === chrome.cast.media.StreamType.LIVE) {
+        this._mediaSession = cast.framework.CastContext.getInstance()
+          .getCurrentSession()
+          .getMediaSession();
+        this._mediaSession.addUpdateListener(this._onLiveCurrentTimeChanged);
+      } else {
+        this._remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, this._onCurrentTimeChanged);
+      }
+    };
+    if (isMediaLoadedEvent.value) {
+      this._remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onMediaInfoChanged);
     }
   }
 
@@ -129,6 +161,15 @@ class CastPlaybackEngine extends FakeEventTarget {
     this._seeking = false;
     this.dispatchEvent(new FakeEvent(EventType.TIME_UPDATE));
     this._maybeEndPlayback();
+  }
+
+  _onLiveCurrentTimeChanged(): void {
+    if (this._mediaSession.currentTime !== this._currentTime) {
+      this._currentTime = this._mediaSession.currentTime;
+      this._seeking = false;
+      this.dispatchEvent(new FakeEvent(EventType.TIME_UPDATE));
+      this._maybeEndLivePlayback();
+    }
   }
 
   _onIsPausedChanged(): void {
@@ -159,6 +200,13 @@ class CastPlaybackEngine extends FakeEventTarget {
     const delta = Math.round(this._duration - this._currentTime);
     if (this._currentTime !== 0 && this._duration !== 0 && delta <= 1) {
       this._currentTime = this._duration;
+      this.dispatchEvent(new FakeEvent(EventType.ENDED));
+    }
+  }
+
+  _maybeEndLivePlayback(): void {
+    const range = this._mediaSession.liveSeekableRange;
+    if (range && range.isLiveDone) {
       this.dispatchEvent(new FakeEvent(EventType.ENDED));
     }
   }

@@ -278,12 +278,6 @@ class CastPlayer extends BaseRemotePlayer {
     this._castContext = cast.framework.CastContext.getInstance();
     this._castRemotePlayer = new cast.framework.RemotePlayer();
     this._castRemotePlayerController = new cast.framework.RemotePlayerController(this._castRemotePlayer);
-
-    this._ui = new CastUI();
-    this._tracksManager = new CastTracksManager(this._castRemotePlayer);
-    this._engine = new CastPlaybackEngine(this._castRemotePlayer, this._castRemotePlayerController);
-    this._stateManager = new CastStateManager(this._castRemotePlayer, this._castRemotePlayerController);
-
     this._castRemotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, () => {
       if (this._castRemotePlayer.isConnected) {
         this._setupRemotePlayer();
@@ -295,8 +289,12 @@ class CastPlayer extends BaseRemotePlayer {
 
   _setupRemotePlayer(): void {
     this._logger.debug('Setup remote player');
-    this._attachListeners();
     this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    this._tracksManager = new CastTracksManager(this._castRemotePlayer);
+    this._engine = new CastPlaybackEngine(this._castRemotePlayer, this._castRemotePlayerController);
+    this._stateManager = new CastStateManager(this._castRemotePlayer, this._castRemotePlayerController);
+    this._ui = new CastUI();
+    this._attachListeners();
     const snapshot = this._remoteControl.getPlayerSnapshot();
     const session = new RemoteSession(
       this._castSession.getSessionId(),
@@ -341,19 +339,8 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.listen(this._engine, EventType.MUTE_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.DURATION_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.ENDED, e => {
-      if (this.isLive()) {
-        const mediaSession = this._castSession.getMediaSession();
-        if (mediaSession) {
-          const range = mediaSession.liveSeekableRange;
-          if (range && range.isLiveDone) {
-            this._ended = true;
-            this.dispatchEvent(e);
-          }
-        }
-      } else {
-        this._ended = true;
-        this.dispatchEvent(e);
-      }
+      this._ended = true;
+      this.dispatchEvent(e);
     });
     this._eventManager.listen(this._tracksManager, EventType.TRACKS_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.TEXT_TRACK_CHANGED, e => this.dispatchEvent(e));
