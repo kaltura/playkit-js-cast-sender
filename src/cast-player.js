@@ -6,7 +6,8 @@ import {CastPlaybackEngine} from './cast-playack-engine';
 import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
 
-const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType} = core;
+export const INTERVAL_FREQUENCY = 500;
+const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType, AbrMode} = core;
 const {
   BaseRemotePlayer,
   PlayerSnapshot,
@@ -367,20 +368,25 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _resumeSession(): void {
-    const onMediaInfoChanged = () => {
-      this._castRemotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onMediaInfoChanged);
-      this._mediaInfo = mediaSession.customData.mediaInfo;
-      this._onLoadMediaSuccess();
-    };
-    this.reset();
-    const mediaSession = this._castSession.getMediaSession();
-    if (mediaSession) {
-      this._castRemotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onMediaInfoChanged);
-    }
+    this._readyPromise = this._createReadyPromise();
+    const mediaInfoIntervalId = setInterval(() => {
+      const mediaSession = this._castSession.getMediaSession();
+      if (mediaSession && mediaSession.customData) {
+        clearInterval(mediaInfoIntervalId);
+        this._mediaInfo = mediaSession.customData.mediaInfo;
+        this._onLoadMediaSuccess();
+      }
+    }, INTERVAL_FREQUENCY);
   }
 
   _onLoadMediaSuccess(): void {
     this._logger.debug('Load media success');
+    this._triggerInitialPlayerEvents();
+    this._tracksManager.parseTracks();
+    this._handleFirstPlay();
+  }
+
+  _triggerInitialPlayerEvents(): void {
     this.dispatchEvent(
       new FakeEvent(EventType.SOURCE_SELECTED, {
         selectedSource: [
@@ -392,9 +398,7 @@ class CastPlayer extends BaseRemotePlayer {
       })
     );
     this.dispatchEvent(new FakeEvent(EventType.LOADED_METADATA));
-    this.dispatchEvent(new FakeEvent(EventType.ABR_MODE_CHANGED, {mode: 'auto'}));
-    this._tracksManager.parseTracks();
-    this._handleFirstPlay();
+    this.dispatchEvent(new FakeEvent(EventType.ABR_MODE_CHANGED, {mode: AbrMode.AUTO}));
   }
 
   _onLoadMediaFailed(errorCode: string): void {

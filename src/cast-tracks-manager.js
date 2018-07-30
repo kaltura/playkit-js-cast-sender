@@ -1,5 +1,6 @@
 // @flow
 import {cast as remote, core} from 'kaltura-player-js';
+import {INTERVAL_FREQUENCY} from './cast-player';
 
 const {TextStyleConverter} = remote;
 const {Track, TextStyle, AudioTrack, VideoTrack, TextTrack, Utils, TrackType, EventType, FakeEvent, FakeEventTarget} = core;
@@ -12,10 +13,10 @@ const TRACK_TYPE_TO_INSTANCE: {[type: string]: Track} = {
 class CastTracksManager extends FakeEventTarget {
   _remotePlayer: Object;
   _castSession: Object;
-  _mediaSession: Object;
   _textStyle: TextStyle;
   _activeTrackIds: Array<number> = [];
   _tracks: Array<Track> = [];
+  _monitorIntervalId: number;
   _onMediaStatusUpdate: Function;
 
   constructor(remotePlayer: Object) {
@@ -23,12 +24,12 @@ class CastTracksManager extends FakeEventTarget {
     this._remotePlayer = remotePlayer;
     this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
     this._textStyle = new TextStyle();
-    this._onMediaStatusUpdate = this._onMediaStatusUpdate.bind(this);
+    this._bindEvents();
   }
 
   parseTracks(): void {
     const tracks = this._remotePlayer.mediaInfo.tracks;
-    if (tracks.length > 0) {
+    if (tracks && tracks.length > 0) {
       const castTextTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.TEXT);
       const castVideoTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.VIDEO);
       const castAudioTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.AUDIO);
@@ -38,8 +39,7 @@ class CastTracksManager extends FakeEventTarget {
       this._tracks = audioTracks.concat(videoTracks).concat(textTracks);
       this._addTextTrackOffOption();
     }
-    this._mediaSession = this._castSession.getMediaSession();
-    this._mediaSession.addUpdateListener(this._onMediaStatusUpdate);
+    this._monitorIntervalId = setInterval(this._onMediaStatusUpdate, INTERVAL_FREQUENCY);
     this.dispatchEvent(new FakeEvent(EventType.TRACKS_CHANGED, {tracks: this._tracks}));
   }
 
@@ -71,22 +71,22 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   reset(): void {
+    clearInterval(this._monitorIntervalId);
     this._tracks = [];
     this._activeTrackIds = [];
   }
 
   destroy(): void {
+    clearInterval(this._monitorIntervalId);
     this._tracks = [];
     this._activeTrackIds = [];
-    if (this._mediaSession) {
-      this._mediaSession.removeUpdateListener(this._onMediaStatusUpdate);
-    }
   }
 
   set textStyle(style: TextStyle): void {
     const textTrackStyle = TextStyleConverter.toCastTextStyle(style);
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(null, textTrackStyle);
-    this._mediaSession.editTracksInfo(
+    const mediaSession = this._castSession.getMediaSession();
+    mediaSession.editTracksInfo(
       tracksInfoRequest,
       () => {
         this._textStyle = style;
@@ -100,6 +100,10 @@ class CastTracksManager extends FakeEventTarget {
 
   get textStyle(): ?TextStyle {
     return this._textStyle.clone();
+  }
+
+  _bindEvents(): void {
+    this._onMediaStatusUpdate = this._onMediaStatusUpdate.bind(this);
   }
 
   _parseTextTracks(castTextTracks: Array<Object>): Array<TextTrack> {
@@ -201,7 +205,8 @@ class CastTracksManager extends FakeEventTarget {
       this._activeTrackIds.push(newTrack.id);
     }
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this._activeTrackIds);
-    this._mediaSession.editTracksInfo(
+    const mediaSession = this._castSession.getMediaSession();
+    mediaSession.editTracksInfo(
       tracksInfoRequest,
       () => {
         this._markActiveTrack(currentTrack, false);
@@ -251,10 +256,11 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   _onMediaStatusUpdate(): void {
-    if (this._mediaSession) {
+    const mediaSession = this._castSession.getMediaSession();
+    if (mediaSession) {
       const isTextStyleChanged = () => {
         const localTextStyle = TextStyleConverter.toCastTextStyle(this.textStyle);
-        const remoteTextStyle = this._mediaSession.media.textTrackStyle;
+        const remoteTextStyle = mediaSession.media.textTrackStyle;
         if (remoteTextStyle) {
           return !(
             localTextStyle.backgroundColor === remoteTextStyle.backgroundColor &&
@@ -266,23 +272,23 @@ class CastTracksManager extends FakeEventTarget {
         return false;
       };
       const isActiveTrackIdsChanged = () => {
-        if (this._mediaSession.activeTrackIds) {
+        if (mediaSession.activeTrackIds) {
           return !(
-            this._activeTrackIds.length === this._mediaSession.activeTrackIds.length &&
-            this._activeTrackIds.every((value, index) => value === this._mediaSession.activeTrackIds[index])
+            this._activeTrackIds.length === mediaSession.activeTrackIds.length &&
+            this._activeTrackIds.every((value, index) => value === mediaSession.activeTrackIds[index])
           );
         }
         return false;
       };
       if (isActiveTrackIdsChanged()) {
-        const diffIds = this._mediaSession.activeTrackIds.filter(i => !this._activeTrackIds.includes(i));
+        const diffIds = mediaSession.activeTrackIds.filter(i => !this._activeTrackIds.includes(i));
         diffIds.forEach(id => {
           const track = this._tracks.find(t => t.id === id);
           this.selectTrack(track);
         });
       }
       if (isTextStyleChanged()) {
-        const style = TextStyleConverter.toPlayerTextStyle(this._mediaSession.media.textTrackStyle);
+        const style = TextStyleConverter.toPlayerTextStyle(mediaSession.media.textTrackStyle);
         this._textStyle = style;
         this.dispatchEvent(new FakeEvent(EventType.TEXT_STYLE_CHANGED, {textStyle: style}));
       }

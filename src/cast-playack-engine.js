@@ -1,5 +1,6 @@
 // @flow
 import {core} from 'kaltura-player-js';
+import {INTERVAL_FREQUENCY} from './cast-player';
 
 const {EventType, FakeEvent, FakeEventTarget} = core;
 
@@ -13,6 +14,7 @@ class CastPlaybackEngine extends FakeEventTarget {
   _currentTime: number = 0;
   _duration: number = 0;
   _seeking: boolean = false;
+  _liveCurrentTimeIntervalId: number;
   _onCurrentTimeChanged: Function;
   _onIsPausedChanged: Function;
   _onDurationChanged: Function;
@@ -30,12 +32,14 @@ class CastPlaybackEngine extends FakeEventTarget {
   }
 
   reset(): void {
-    this._resetFlags();
     this._toggleListeners(false);
+    clearInterval(this._liveCurrentTimeIntervalId);
+    this._resetFlags();
     this._toggleListeners(true);
   }
 
   destroy(): void {
+    clearInterval(this._liveCurrentTimeIntervalId);
     this._toggleListeners(false);
     this._muted = false;
     this._volume = 1;
@@ -133,9 +137,6 @@ class CastPlaybackEngine extends FakeEventTarget {
     } else {
       Object.keys(listeners).forEach(e => this._remotePlayerController.removeEventListener(e, listeners[e]));
       this._remotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, this._onCurrentTimeChanged);
-      if (this._mediaSession) {
-        this._mediaSession.removeUpdateListener(this._onLiveCurrentTimeChanged);
-      }
     }
   }
 
@@ -146,7 +147,7 @@ class CastPlaybackEngine extends FakeEventTarget {
         this._mediaSession = cast.framework.CastContext.getInstance()
           .getCurrentSession()
           .getMediaSession();
-        this._mediaSession.addUpdateListener(this._onLiveCurrentTimeChanged);
+        this._liveCurrentTimeIntervalId = setInterval(this._onLiveCurrentTimeChanged, INTERVAL_FREQUENCY);
       } else {
         this._remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, this._onCurrentTimeChanged);
       }
@@ -164,12 +165,10 @@ class CastPlaybackEngine extends FakeEventTarget {
   }
 
   _onLiveCurrentTimeChanged(): void {
-    if (this._mediaSession.currentTime !== this._currentTime) {
-      this._currentTime = this._mediaSession.currentTime;
-      this._seeking = false;
-      this.dispatchEvent(new FakeEvent(EventType.TIME_UPDATE));
-      this._maybeEndLivePlayback();
-    }
+    this._currentTime = this._mediaSession.currentTime;
+    this._seeking = false;
+    this.dispatchEvent(new FakeEvent(EventType.TIME_UPDATE));
+    this._maybeEndLivePlayback();
   }
 
   _onIsPausedChanged(): void {
