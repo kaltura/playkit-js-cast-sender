@@ -14,7 +14,6 @@ class CastUI extends RemotePlayerUI {
         <Components.Loading player={props.player} />
         <div className={style.playerGui} id="player-gui">
           <Components.OverlayPortal />
-          <Components.OverlayAction player={props.player} />
           <Components.BottomBar>
             <Components.SeekBarPlaybackContainer showFramePreview showTimeBubble player={props.player} playerContainer={props.playerContainer} />
             <div className={style.leftControls}>
@@ -32,6 +31,7 @@ class CastUI extends RemotePlayerUI {
         </div>
         <Components.PrePlaybackPlayOverlay player={props.player} />
         <Components.CastOverlay player={props.player} />
+        <Components.OverlayAction player={props.player} />
       </div>
     );
   }
@@ -43,7 +43,6 @@ class CastUI extends RemotePlayerUI {
         <Components.Loading player={props.player} />
         <div className={style.playerGui} id="player-gui">
           <Components.OverlayPortal />
-          <Components.OverlayAction player={props.player} />
           <Components.BottomBar>
             <Components.SeekBarLivePlaybackContainer showFramePreview showTimeBubble player={props.player} playerContainer={props.playerContainer} />
             <div className={style.leftControls}>
@@ -60,6 +59,7 @@ class CastUI extends RemotePlayerUI {
         </div>
         <Components.PrePlaybackPlayOverlay player={props.player} />
         <Components.CastOverlay player={props.player} />
+        <Components.OverlayAction player={props.player} />
       </div>
     );
   }

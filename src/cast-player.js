@@ -32,6 +32,8 @@ class CastPlayer extends BaseRemotePlayer {
     dvrThreshold: 5
   };
 
+  _remoteSession: RemoteSession;
+  _castSession: Object;
   _castContext: Object;
   _castRemotePlayer: Object;
   _castRemotePlayerController: Object;
@@ -43,6 +45,9 @@ class CastPlayer extends BaseRemotePlayer {
   _mediaInfo: ?Object = null;
   _firstPlay: boolean = true;
   _ended: boolean = false;
+  _playbackStarted: boolean = false;
+  _reset: boolean = true;
+  _destroyed: boolean = false;
 
   constructor(config: Object, remoteControl: RemoteControl) {
     super('CastPlayer', config, remoteControl);
@@ -58,7 +63,9 @@ class CastPlayer extends BaseRemotePlayer {
 
   loadMedia(mediaInfo: Object, options?: CastLoadOptions): Promise<*> {
     this.reset();
-
+    if (this._playbackStarted) {
+      this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_STARTED));
+    }
     const media = new chrome.cast.media.MediaInfo();
     const request = new chrome.cast.media.LoadRequest(media);
 
@@ -112,15 +119,20 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   reset(): void {
+    if (this._reset) return;
+    this._reset = true;
     this._firstPlay = true;
     this._ended = false;
     this._tracksManager.reset();
     this._engine.reset();
     this._stateManager.reset();
     this._readyPromise = this._createReadyPromise();
+    this.dispatchEvent(new FakeEvent(EventType.PLAYER_RESET));
   }
 
   destroy(): void {
+    if (this._destroyed) return;
+    this._destroyed = true;
     this._firstPlay = true;
     this._ended = false;
     this._readyPromise = null;
@@ -128,6 +140,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._tracksManager.destroy();
     this._engine.destroy();
     this._stateManager.destroy();
+    this.dispatchEvent(new FakeEvent(EventType.PLAYER_DESTROY));
   }
 
   isLive(): boolean {
@@ -197,6 +210,10 @@ class CastPlayer extends BaseRemotePlayer {
 
   stopCasting(): void {
     this._castSession.endSession(true);
+  }
+
+  getCastSession(): RemoteSession {
+    return Utils.Object.copyDeep(this._remoteSession);
   }
 
   set textStyle(style: TextStyle): void {
@@ -307,14 +324,14 @@ class CastPlayer extends BaseRemotePlayer {
     this._ui = new CastUI();
     this._attachListeners();
     const snapshot = this._remoteControl.getPlayerSnapshot();
-    const session = new RemoteSession(
+    this._remoteSession = new RemoteSession(
       this._castSession.getSessionId(),
       this._castSession.getCastDevice().friendlyName,
       this._castSession.getSessionState() !== cast.framework.SessionState.SESSION_STARTED
     );
-    const payload = new RemoteConnectedPayload(this, session, this._ui);
+    const payload = new RemoteConnectedPayload(this, this._remoteSession, this._ui);
     this._remoteControl.onRemoteDeviceConnected(payload);
-    if (session.resuming) {
+    if (this._remoteSession.resuming) {
       this._resumeSession();
     } else if (snapshot.mediaInfo) {
       this.loadMedia(snapshot.mediaInfo, snapshot);
@@ -367,7 +384,9 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _handleFirstPlay(): void {
-    this._firstPlay = false;
+    if (this._playbackStarted) {
+      this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_ENDED));
+    }
     this.dispatchEvent(new FakeEvent(EventType.PLAY));
     this.dispatchEvent(new FakeEvent(EventType.FIRST_PLAY));
     this.dispatchEvent(new FakeEvent(EventType.PLAYING));
@@ -375,6 +394,8 @@ class CastPlayer extends BaseRemotePlayer {
     if (this.paused) {
       this.dispatchEvent(new FakeEvent(EventType.PAUSE));
     }
+    this._firstPlay = false;
+    this._playbackStarted = true;
   }
 
   _resumeSession(): void {
@@ -391,6 +412,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   _onLoadMediaSuccess(): void {
     this._logger.debug('Load media success');
+    this._reset = false;
     this._triggerInitialPlayerEvents();
     this._tracksManager.parseTracks();
     this._handleFirstPlay();
