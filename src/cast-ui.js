@@ -31,6 +31,7 @@ class CastUI extends RemotePlayerUI {
           </Components.BottomBar>
         </div>
         <Components.PrePlaybackPlayOverlay player={props.player} />
+        <Components.CastOverlay player={props.player} />
       </div>
     );
   }
@@ -38,7 +39,6 @@ class CastUI extends RemotePlayerUI {
   liveUI(props: Object): any {
     return (
       <div className={style.playbackGuiWWrapper}>
-        <Components.CastOverlay player={props.player} />
         <Components.KeyboardControl player={props.player} config={props.config} />
         <Components.Loading player={props.player} />
         <div className={style.playerGui} id="player-gui">
@@ -59,6 +59,16 @@ class CastUI extends RemotePlayerUI {
           </Components.BottomBar>
         </div>
         <Components.PrePlaybackPlayOverlay player={props.player} />
+        <Components.CastOverlay player={props.player} />
+      </div>
+    );
+  }
+
+  idleUI(props: Object): any {
+    return (
+      <div className={style.playbackGuiWWrapper}>
+        <Components.Loading player={props.player} />
+        <Components.CastOverlay player={props.player} />
       </div>
     );
   }
