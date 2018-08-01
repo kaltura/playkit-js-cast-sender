@@ -24,7 +24,7 @@ class CastUI extends RemotePlayerUI {
             <div className={style.rightControls}>
               <Components.VolumeControl player={props.player} />
               <Components.LanguageControl player={props.player} />
-              <Components.ChromecastControl player={props.player} />
+              <Components.CastControl player={props.player} />
               <Components.FullscreenControl player={props.player} />
             </div>
           </Components.BottomBar>
@@ -52,7 +52,7 @@ class CastUI extends RemotePlayerUI {
             <div className={style.rightControls}>
               <Components.VolumeControl player={props.player} />
               <Components.LanguageControl player={props.player} />
-              <Components.ChromecastControl player={props.player} />
+              <Components.CastControl player={props.player} />
               <Components.FullscreenControl player={props.player} />
             </div>
           </Components.BottomBar>
