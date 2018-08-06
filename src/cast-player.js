@@ -193,7 +193,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   selectTrack(track: ?Track): void {
-    return this._tracksManager.selectTrack(track);
+    this._tracksManager.selectTrack(track);
   }
 
   hideTextTrack(): void {
@@ -304,6 +304,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   _initializeRemotePlayer(): void {
     this._castContext = cast.framework.CastContext.getInstance();
+    this._addSessionLifecycleListeners();
     this._castRemotePlayer = new cast.framework.RemotePlayer();
     this._castRemotePlayerController = new cast.framework.RemotePlayerController(this._castRemotePlayer);
     this._castRemotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, () => {
@@ -436,6 +437,22 @@ class CastPlayer extends BaseRemotePlayer {
   _onLoadMediaFailed(errorCode: string): void {
     this._logger.debug('Load media failed', errorCode);
     // TODO
+  }
+
+  _addSessionLifecycleListeners(): void {
+    this._castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, event => {
+      switch (event.sessionState) {
+        case cast.framework.SessionState.SESSION_STARTING:
+          this._remoteControl.onRemoteDeviceConnecting();
+          break;
+        case cast.framework.SessionState.SESSION_ENDING:
+          this._remoteControl.onRemoteDeviceDisconnecting();
+          break;
+        case cast.framework.SessionState.SESSION_START_FAILED:
+          this._remoteControl.onRemoteDeviceConnectFailed();
+          break;
+      }
+    });
   }
 }
 
