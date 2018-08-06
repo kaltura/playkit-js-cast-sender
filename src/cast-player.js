@@ -48,6 +48,7 @@ class CastPlayer extends BaseRemotePlayer {
   _playbackStarted: boolean = false;
   _reset: boolean = true;
   _destroyed: boolean = false;
+  _mediaInfoIntervalId: number;
 
   constructor(config: Object, remoteControl: RemoteControl) {
     super('CastPlayer', config, remoteControl);
@@ -119,6 +120,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   reset(): void {
+    clearInterval(this._mediaInfoIntervalId);
     if (this._reset) return;
     this._reset = true;
     this._firstPlay = true;
@@ -131,6 +133,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   destroy(): void {
+    clearInterval(this._mediaInfoIntervalId);
     if (this._destroyed) return;
     this._destroyed = true;
     this._firstPlay = true;
@@ -401,10 +404,10 @@ class CastPlayer extends BaseRemotePlayer {
 
   _resumeSession(): void {
     this._readyPromise = this._createReadyPromise();
-    const mediaInfoIntervalId = setInterval(() => {
+    this._mediaInfoIntervalId = setInterval(() => {
       const mediaSession = this._castSession.getMediaSession();
       if (mediaSession && mediaSession.customData) {
-        clearInterval(mediaInfoIntervalId);
+        clearInterval(this._mediaInfoIntervalId);
         this._mediaInfo = mediaSession.customData.mediaInfo;
         this._onLoadMediaSuccess();
       }
