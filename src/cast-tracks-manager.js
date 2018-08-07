@@ -231,11 +231,13 @@ class CastTracksManager extends FakeEventTarget {
 
   _addTextTrackOffOption(): void {
     const textTracks = this._getTracksByType(TrackType.TEXT);
+    const lastTrack = textTracks[textTracks.length - 1];
     if (textTracks && textTracks.length) {
       this._tracks.push(
         new TextTrack({
+          id: lastTrack.id + 1,
           active: true,
-          index: textTracks.length,
+          index: lastTrack.index + 1,
           kind: 'subtitles',
           label: 'Off',
           language: 'off'
