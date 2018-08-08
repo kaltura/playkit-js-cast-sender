@@ -80,6 +80,9 @@ class CastPlayer extends BaseRemotePlayer {
         audioLanguage: options.audioLanguage,
         textLanguage: options.textLanguage
       };
+      if (options.adsConfig) {
+        media.vmapAdsRequest = this._getVmapAdsRequest(options.adsConfig);
+      }
     }
 
     media.customData = media.customData || {};
@@ -456,6 +459,17 @@ class CastPlayer extends BaseRemotePlayer {
           break;
       }
     });
+  }
+
+  _getVmapAdsRequest(adsConfig: Object): Object {
+    const vmapAdsRequest = {};
+    if (adsConfig.adTagUrl) {
+      vmapAdsRequest.adTagUrl = adsConfig.adTagUrl;
+    }
+    if (adsConfig.adsResponse) {
+      vmapAdsRequest.adsResponse = adsConfig.adsResponse;
+    }
+    return vmapAdsRequest;
   }
 }
 

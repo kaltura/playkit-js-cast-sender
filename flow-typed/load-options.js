@@ -8,5 +8,6 @@ declare type CastLoadOptions = {
   startTime?: number,
   textStyle?: TextStyle,
   audioLanguage?: string,
-  textLanguage?: string
+  textLanguage?: string,
+  adsConfig?: ?Object
 };
