@@ -16,7 +16,7 @@ class CastTracksManager extends FakeEventTarget {
   _textStyle: TextStyle;
   _activeTrackIds: Array<number> = [];
   _tracks: Array<Track> = [];
-  _monitorIntervalId: number;
+  _mediaStatusIntervalId: number;
   _onMediaStatusUpdate: Function;
 
   constructor(remotePlayer: Object) {
@@ -39,7 +39,7 @@ class CastTracksManager extends FakeEventTarget {
       this._tracks = audioTracks.concat(videoTracks).concat(textTracks);
       this._addTextTrackOffOption();
     }
-    this._monitorIntervalId = setInterval(this._onMediaStatusUpdate, INTERVAL_FREQUENCY);
+    this._startOnMediaStatusUpdateInterval();
     this.dispatchEvent(new FakeEvent(EventType.TRACKS_CHANGED, {tracks: this._tracks}));
   }
 
@@ -71,13 +71,13 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   reset(): void {
-    clearInterval(this._monitorIntervalId);
+    this._stopOnMediaStatusUpdateInterval();
     this._tracks = [];
     this._activeTrackIds = [];
   }
 
   destroy(): void {
-    clearInterval(this._monitorIntervalId);
+    this._stopOnMediaStatusUpdateInterval();
     this._tracks = [];
     this._activeTrackIds = [];
   }
@@ -100,6 +100,17 @@ class CastTracksManager extends FakeEventTarget {
 
   get textStyle(): ?TextStyle {
     return this._textStyle.clone();
+  }
+
+  _startOnMediaStatusUpdateInterval(): void {
+    this._mediaStatusIntervalId = setInterval(this._onMediaStatusUpdate, INTERVAL_FREQUENCY);
+  }
+
+  _stopOnMediaStatusUpdateInterval(): void {
+    if (this._mediaStatusIntervalId) {
+      clearInterval(this._mediaStatusIntervalId);
+      this._mediaStatusIntervalId = null;
+    }
   }
 
   _bindEvents(): void {
@@ -153,12 +164,14 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   _selectVideoTrack(track: VideoTrack): void {
+    this._stopOnMediaStatusUpdateInterval();
     const currentTrack = this.getActiveTracks().video;
     this._selectTrack(
       track,
       currentTrack,
       () => {
         this.dispatchEvent(new FakeEvent(EventType.VIDEO_TRACK_CHANGED, {selectedVideoTrack: track}));
+        this._startOnMediaStatusUpdateInterval();
       },
       (/* e */) => {
         // TODO - Error handling
@@ -167,12 +180,14 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   _selectAudioTrack(track: AudioTrack): void {
+    this._stopOnMediaStatusUpdateInterval();
     const currentTrack = this.getActiveTracks().audio;
     this._selectTrack(
       track,
       currentTrack,
       () => {
         this.dispatchEvent(new FakeEvent(EventType.AUDIO_TRACK_CHANGED, {selectedAudioTrack: track}));
+        this._startOnMediaStatusUpdateInterval();
       },
       (/* e */) => {
         // TODO - Error handling
@@ -181,12 +196,14 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   _selectTextTrack(track: TextTrack): void {
+    this._stopOnMediaStatusUpdateInterval();
     const currentTrack = this.getActiveTracks().text;
     this._selectTrack(
       track,
       currentTrack,
       () => {
         this.dispatchEvent(new FakeEvent(EventType.TEXT_TRACK_CHANGED, {selectedTextTrack: track}));
+        this._startOnMediaStatusUpdateInterval();
       },
       (/* e */) => {
         // TODO - Error handling
