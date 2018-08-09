@@ -9,7 +9,6 @@ class CastUI extends RemotePlayerUI {
   playbackUI(props: Object): any {
     return (
       <div className={style.playbackGuiWWrapper}>
-        <Components.CastOverlay player={props.player} />
         <Components.KeyboardControl player={props.player} config={props.config} />
         <Components.Loading player={props.player} />
         <div className={style.playerGui} id="player-gui">
