@@ -62,7 +62,7 @@ class CastPlayer extends BaseRemotePlayer {
       });
   }
 
-  loadMedia(mediaInfo: Object, options?: CastLoadOptions): Promise<*> {
+  loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
     this.reset();
     if (this._playbackStarted) {
       this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_STARTED));
@@ -71,18 +71,15 @@ class CastPlayer extends BaseRemotePlayer {
     const request = new chrome.cast.media.LoadRequest(media);
 
     if (options) {
-      request.autoplay = options.autoplay;
-      request.currentTime = options.startTime;
-      if (this.textStyle && !this.textStyle.isEqual(options.textStyle)) {
-        media.textTrackStyle = TextStyleConverter.toCastTextStyle(options.textStyle);
-      }
-      media.customData = {
-        audioLanguage: options.audioLanguage,
-        textLanguage: options.textLanguage
-      };
-      if (options.adsConfig) {
-        media.vmapAdsRequest = this._getVmapAdsRequest(options.adsConfig);
-      }
+      Object.keys(options).forEach(option => {
+        if (option !== 'media') {
+          request[option] = options[option];
+        } else {
+          Object.keys(options.media).forEach(mediaOption => {
+            media[mediaOption] = options.media[mediaOption];
+          });
+        }
+      });
     }
 
     media.customData = media.customData || {};
@@ -340,8 +337,10 @@ class CastPlayer extends BaseRemotePlayer {
     this._remoteControl.onRemoteDeviceConnected(payload);
     if (this._remoteSession.resuming) {
       this._resumeSession();
-    } else if (snapshot.mediaInfo) {
-      this.loadMedia(snapshot.mediaInfo, snapshot);
+    } else if (snapshot && snapshot.mediaInfo) {
+      const mediaInfo = snapshot.mediaInfo;
+      const loadOptions = this._getLoadOptions(snapshot);
+      this.loadMedia(mediaInfo, loadOptions);
     }
   }
 
@@ -459,6 +458,25 @@ class CastPlayer extends BaseRemotePlayer {
           break;
       }
     });
+  }
+
+  _getLoadOptions(snapshot: PlayerSnapshot): Object {
+    const loadOptions = {
+      autoplay: snapshot.autoplay,
+      currentTime: snapshot.startTime,
+      media: {}
+    };
+    if (this.textStyle && !this.textStyle.isEqual(snapshot.textStyle)) {
+      loadOptions.media.textTrackStyle = TextStyleConverter.toCastTextStyle(snapshot.textStyle);
+    }
+    loadOptions.media.customData = {
+      audioLanguage: snapshot.audioLanguage,
+      textLanguage: snapshot.textLanguage
+    };
+    if (snapshot.adsConfig) {
+      loadOptions.media.vmapAdsRequest = this._getVmapAdsRequest(snapshot.adsConfig);
+    }
+    return loadOptions;
   }
 
   _getVmapAdsRequest(adsConfig: Object): Object {
