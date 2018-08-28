@@ -15,11 +15,17 @@ const {
   RemoteDisconnectedPayload,
   RemoteAvailablePayload,
   RemoteSession,
-  TextStyleConverter
+  TextStyleConverter,
+  CustomMessageType,
+  CustomActionMessage,
+  CustomActionType,
+  CustomMessage,
+  CustomEventMessage
 } = remote;
 
 export const INTERVAL_FREQUENCY = 500;
 export const SECONDS_TO_MINUTES_DIVIDER = 60;
+export const CUSTOM_CHANNEL = 'urn:x-cast:com.kaltura.cast.playkit';
 
 class CastPlayer extends BaseRemotePlayer {
   static Type: string = 'chromecast';
@@ -219,6 +225,10 @@ class CastPlayer extends BaseRemotePlayer {
     return Utils.Object.copyDeep(this._remoteSession);
   }
 
+  skipAd(): void {
+    this._castSession.sendMessage(CUSTOM_CHANNEL, new CustomActionMessage(CustomActionType.SKIP_AD));
+  }
+
   set textStyle(style: TextStyle): void {
     this._tracksManager.textStyle = style;
   }
@@ -322,6 +332,7 @@ class CastPlayer extends BaseRemotePlayer {
   _setupRemotePlayer(): void {
     this._logger.debug('Setup remote player');
     this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    this._castSession.addMessageListener(CUSTOM_CHANNEL, (customChannel, customMessage) => this._onCustomMessage(customChannel, customMessage));
     this._tracksManager = new CastTracksManager(this._castRemotePlayer);
     this._engine = new CastPlaybackEngine(this._castRemotePlayer, this._castRemotePlayerController);
     this._stateManager = new CastStateManager(this._castRemotePlayer, this._castRemotePlayerController);
@@ -488,6 +499,23 @@ class CastPlayer extends BaseRemotePlayer {
       vmapAdsRequest.adsResponse = adsConfig.adsResponse;
     }
     return vmapAdsRequest;
+  }
+
+  _onCustomMessage(customChannel: string, customMessage: CustomMessage): void {
+    try {
+      const parsedCustomMessage = JSON.parse(customMessage);
+      switch (parsedCustomMessage.type) {
+        case CustomMessageType.EVENT:
+          this._handleCustomEvent(parsedCustomMessage);
+          break;
+      }
+    } catch (e) {
+      //TODO: log
+    }
+  }
+
+  _handleCustomEvent(customEvent: CustomEventMessage): void {
+    this.dispatchEvent(new FakeEvent(customEvent.event, customEvent.payload));
   }
 }
 
