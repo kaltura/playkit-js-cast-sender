@@ -5,6 +5,7 @@ import {CastTracksManager} from './cast-tracks-manager';
 import {CastPlaybackEngine} from './cast-playack-engine';
 import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
+import {CastAdsManager} from './cast-ads-manager';
 
 const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType, AbrMode} = core;
 const {
@@ -20,6 +21,7 @@ const {
 
 export const INTERVAL_FREQUENCY = 500;
 export const SECONDS_TO_MINUTES_DIVIDER = 60;
+export const CUSTOM_CHANNEL = 'urn:x-cast:com.kaltura.cast.playkit';
 
 class CastPlayer extends BaseRemotePlayer {
   static Type: string = 'chromecast';
@@ -40,6 +42,7 @@ class CastPlayer extends BaseRemotePlayer {
   _ui: CastUI;
   _stateManager: CastStateManager;
   _tracksManager: CastTracksManager;
+  _adsManager: CastAdsManager;
   _engine: CastPlaybackEngine;
   _readyPromise: ?Promise<*> = null;
   _mediaInfo: ?Object = null;
@@ -322,6 +325,7 @@ class CastPlayer extends BaseRemotePlayer {
   _setupRemotePlayer(): void {
     this._logger.debug('Setup remote player');
     this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    this._adsManager = new CastAdsManager(this);
     this._tracksManager = new CastTracksManager(this._castRemotePlayer);
     this._engine = new CastPlaybackEngine(this._castRemotePlayer, this._castRemotePlayerController);
     this._stateManager = new CastStateManager(this._castRemotePlayer, this._castRemotePlayerController);

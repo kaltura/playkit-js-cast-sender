@@ -71,6 +71,37 @@ class CastUI extends RemotePlayerUI {
       </div>
     );
   }
+
+  adsUI(props: Object): any {
+    return (
+      <div className={style.adGuiWrapper}>
+        <Components.KeyboardControl player={props.player} config={props.config} />
+        <Components.Loading player={props.player} />
+        <div className={style.playerGui} id="player-gui">
+          <Components.CastOverlay player={props.player} />
+          <div>
+            <Components.TopBar>
+              <div className={style.leftControls}>
+                <span className={style.fontSizeBase}>Advertisement</span>
+              </div>
+            </Components.TopBar>
+          </div>
+          <Components.BottomBar>
+            <div className={style.leftControls}>
+              <Components.PlayPauseControl player={props.player} />
+              <Components.TimeDisplayAdsContainer />
+            </div>
+            <div className={style.rightControls}>
+              <Components.VolumeControl player={props.player} />
+              <Components.CastControl player={props.player} />
+              <Components.FullscreenControl player={props.player} />
+            </div>
+          </Components.BottomBar>
+        </div>
+        <Components.OverlayAction player={props.player} />
+      </div>
+    );
+  }
 }
 
 export {CastUI};
