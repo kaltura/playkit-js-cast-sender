@@ -484,21 +484,43 @@ class CastPlayer extends BaseRemotePlayer {
       audioLanguage: snapshot.audioLanguage,
       textLanguage: snapshot.textLanguage
     };
-    if (snapshot.adsConfig) {
-      loadOptions.media.vmapAdsRequest = this._getVmapAdsRequest(snapshot.adsConfig);
+    if (snapshot.advertising) {
+      const advertising = this._config.advertising;
+      if (!advertising || !advertising.vast) {
+        loadOptions.media.vmapAdsRequest = this._getAdsRequest(snapshot.advertising);
+      } else {
+        const breakClipId = Utils.Generator.uniqueId(5);
+        const breakId = Utils.Generator.uniqueId(5);
+        const breakClips = [
+          {
+            id: breakClipId,
+            position: 0,
+            vastAdsRequest: this._getAdsRequest(snapshot.advertising)
+          }
+        ];
+        const breaks = [
+          {
+            breakClipIds: [breakClipId],
+            id: breakId,
+            position: 0
+          }
+        ];
+        loadOptions.media.breakClips = breakClips;
+        loadOptions.media.breaks = breaks;
+      }
     }
     return loadOptions;
   }
 
-  _getVmapAdsRequest(adsConfig: Object): Object {
-    const vmapAdsRequest = {};
-    if (adsConfig.adTagUrl) {
-      vmapAdsRequest.adTagUrl = adsConfig.adTagUrl;
+  _getAdsRequest(advertising: Object): Object {
+    const adsRequest = {};
+    if (advertising.adTagUrl) {
+      adsRequest.adTagUrl = advertising.adTagUrl;
     }
-    if (adsConfig.adsResponse) {
-      vmapAdsRequest.adsResponse = adsConfig.adsResponse;
+    if (advertising.adsResponse) {
+      adsRequest.adsResponse = advertising.adsResponse;
     }
-    return vmapAdsRequest;
+    return adsRequest;
   }
 
   _onCustomMessage(customChannel: string, customMessage: CustomMessage): void {
