@@ -31,6 +31,7 @@ class CastUI extends RemotePlayerUI {
         <Components.PrePlaybackPlayOverlay player={props.player} />
         <Components.CastOverlay player={props.player} />
         <Components.OverlayAction player={props.player} />
+        <Components.CastAfterPlay player={props.player} />
       </div>
     );
   }
@@ -59,6 +60,7 @@ class CastUI extends RemotePlayerUI {
         <Components.PrePlaybackPlayOverlay player={props.player} />
         <Components.CastOverlay player={props.player} />
         <Components.OverlayAction player={props.player} />
+        <Components.CastAfterPlay player={props.player} />
       </div>
     );
   }
