@@ -261,6 +261,10 @@ class CastPlayer extends BaseRemotePlayer {
     return this._engine.paused;
   }
 
+  get ended(): ?boolean {
+    return this._ended;
+  }
+
   get seeking(): ?boolean {
     return this._engine.seeking;
   }
