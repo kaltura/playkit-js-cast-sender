@@ -218,7 +218,7 @@ class CastTracksManager extends FakeEventTarget {
         this._activeTrackIds.splice(index, 1);
       }
     }
-    if (newTrack.id) {
+    if (newTrack.id && newTrack.language !== 'off') {
       this._activeTrackIds.push(newTrack.id);
     }
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this._activeTrackIds);
