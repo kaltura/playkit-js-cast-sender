@@ -21,17 +21,19 @@ class CastStateManager extends FakeEventTarget {
   }
 
   _updateState(): void {
+    this._currentState.duration = Date.now() / 1000;
+    this._previousState = this._currentState;
     if (this._remotePlayer.playerState) {
-      this._currentState.duration = Date.now() / 1000;
-      this._previousState = this._currentState;
       this._currentState = new State(this._remotePlayer.playerState.toLowerCase());
-      this.dispatchEvent(
-        new FakeEvent(EventType.PLAYER_STATE_CHANGED, {
-          oldState: this.previousState,
-          newState: this.currentState
-        })
-      );
+    } else {
+      this._currentState = new State(StateType.IDLE);
     }
+    this.dispatchEvent(
+      new FakeEvent(EventType.PLAYER_STATE_CHANGED, {
+        oldState: this.previousState,
+        newState: this.currentState
+      })
+    );
   }
 
   reset(): void {

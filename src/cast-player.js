@@ -387,21 +387,26 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.listen(this._engine, EventType.VOLUME_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.MUTE_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.DURATION_CHANGE, e => this.dispatchEvent(e));
-    this._eventManager.listen(this._engine, EventType.ENDED, e => {
-      this._ended = true;
-      this.dispatchEvent(e);
-    });
+    this._eventManager.listen(this._engine, EventType.ENDED, e => this._onEnded(e));
     this._eventManager.listen(this._tracksManager, EventType.TRACKS_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.TEXT_TRACK_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.VIDEO_TRACK_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.AUDIO_TRACK_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.TEXT_STYLE_CHANGED, e => this.dispatchEvent(e));
-    this._eventManager.listen(this._stateManager, EventType.PLAYER_STATE_CHANGED, e => {
-      if (this._stateManager.currentState.type === StateType.PLAYING) {
-        this.dispatchEvent(new FakeEvent(EventType.PLAYING));
-      }
-      this.dispatchEvent(e);
-    });
+    this._eventManager.listen(this._stateManager, EventType.PLAYER_STATE_CHANGED, e => this._onPlayerStateChanged(e));
+  }
+
+  _onEnded(e: FakeEvent): void {
+    this._ended = true;
+    this.dispatchEvent(e);
+  }
+
+  _onPlayerStateChanged(e: FakeEvent): void {
+    if (this._ended) return;
+    if (this._stateManager.currentState.type === StateType.PLAYING) {
+      this.dispatchEvent(new FakeEvent(EventType.PLAYING));
+    }
+    this.dispatchEvent(e);
   }
 
   _handleFirstPlay(): void {
