@@ -1,0 +1,22 @@
+{
+  "presets": [
+    "es2015"
+  ],
+  "plugins": [
+    "transform-flow-strip-types",
+    "transform-class-properties",
+    [
+      "transform-react-jsx",
+      {
+        "pragma": "ui.h"
+      }
+    ]
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        "istanbul"
+      ]
+    }
+  }
+}
