@@ -5,6 +5,7 @@ import {CastTracksManager} from './cast-tracks-manager';
 import {CastPlaybackEngine} from './cast-playack-engine';
 import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
+import {CastAdsController} from './cast-ads-controller';
 
 const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType, AbrMode} = core;
 const {
@@ -17,8 +18,6 @@ const {
   RemoteSession,
   TextStyleConverter,
   CustomMessageType,
-  CustomActionMessage,
-  CustomActionType,
   CustomMessage,
   CustomEventMessage
 } = remote;
@@ -55,6 +54,7 @@ class CastPlayer extends BaseRemotePlayer {
   _reset: boolean = true;
   _destroyed: boolean = false;
   _mediaInfoIntervalId: number;
+  _adsController: CastAdsController;
 
   constructor(config: Object, remoteControl: RemoteControl) {
     super('CastPlayer', config, remoteControl);
@@ -114,7 +114,7 @@ class CastPlayer extends BaseRemotePlayer {
   play(): void {
     if (this.paused) {
       this._engine.play();
-    } else if (this._ended && this.getMediaInfo()) {
+    } else if (this._ended && this._mediaInfo) {
       this.loadMedia(this._mediaInfo);
     }
   }
@@ -225,8 +225,8 @@ class CastPlayer extends BaseRemotePlayer {
     return Utils.Object.copyDeep(this._remoteSession);
   }
 
-  skipAd(): void {
-    this._castSession.sendMessage(CUSTOM_CHANNEL, new CustomActionMessage(CustomActionType.SKIP_AD));
+  get ads(): ?CastAdsController {
+    return this._adsController;
   }
 
   set textStyle(style: TextStyle): void {
@@ -494,6 +494,7 @@ class CastPlayer extends BaseRemotePlayer {
       textLanguage: snapshot.textLanguage
     };
     if (snapshot.advertising) {
+      this._adsController = new CastAdsController();
       const advertising = this._config.advertising;
       if (!advertising || !advertising.vast) {
         loadOptions.media.vmapAdsRequest = this._getAdsRequest(snapshot.advertising);
