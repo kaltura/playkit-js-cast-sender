@@ -16,7 +16,7 @@ class CastTracksManager extends FakeEventTarget {
   _textStyle: TextStyle;
   _activeTrackIds: Array<number> = [];
   _tracks: Array<Track> = [];
-  _mediaStatusIntervalId: number;
+  _mediaStatusIntervalId: ?number;
   _onMediaStatusUpdate: Function;
 
   constructor(remotePlayer: Object) {
