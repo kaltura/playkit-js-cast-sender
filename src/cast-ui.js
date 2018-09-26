@@ -85,7 +85,7 @@ class CastUI extends RemotePlayerUI {
           <div>
             <Components.TopBar>
               <div className={style.leftControls}>
-                <span className={style.fontSizeBase}>Advertisement</span>
+                <Components.AdNotice />
               </div>
               <div className={style.rightControls}>
                 <Components.AdLearnMore />
