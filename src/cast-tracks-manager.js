@@ -92,8 +92,10 @@ class CastTracksManager extends FakeEventTarget {
         this._textStyle = style;
         this.dispatchEvent(new FakeEvent(EventType.TEXT_STYLE_CHANGED, {textStyle: style}));
       },
-      (/* e */) => {
-        // TODO - Error handling
+      error => {
+        this.dispatchEvent(
+          new FakeEvent(EventType.ERROR, new Error(Error.Severity.RECOVERABLE, Error.Category.CAST, Error.Code.EDIT_TRACKS_INFO_ERROR, error))
+        );
       }
     );
   }
@@ -173,8 +175,10 @@ class CastTracksManager extends FakeEventTarget {
         this.dispatchEvent(new FakeEvent(EventType.VIDEO_TRACK_CHANGED, {selectedVideoTrack: track}));
         this._startOnMediaStatusUpdateInterval();
       },
-      (/* e */) => {
-        // TODO - Error handling
+      error => {
+        this.dispatchEvent(
+          new FakeEvent(EventType.ERROR, new Error(Error.Severity.RECOVERABLE, Error.Category.CAST, Error.Code.EDIT_TRACKS_INFO_ERROR, error))
+        );
       }
     );
   }
@@ -189,8 +193,10 @@ class CastTracksManager extends FakeEventTarget {
         this.dispatchEvent(new FakeEvent(EventType.AUDIO_TRACK_CHANGED, {selectedAudioTrack: track}));
         this._startOnMediaStatusUpdateInterval();
       },
-      (/* e */) => {
-        // TODO - Error handling
+      error => {
+        this.dispatchEvent(
+          new FakeEvent(EventType.ERROR, new Error(Error.Severity.RECOVERABLE, Error.Category.CAST, Error.Code.CAST_EDIT_TRACKS_INFO_ERROR, error))
+        );
       }
     );
   }
@@ -205,8 +211,10 @@ class CastTracksManager extends FakeEventTarget {
         this.dispatchEvent(new FakeEvent(EventType.TEXT_TRACK_CHANGED, {selectedTextTrack: track}));
         this._startOnMediaStatusUpdateInterval();
       },
-      (/* e */) => {
-        // TODO - Error handling
+      error => {
+        this.dispatchEvent(
+          new FakeEvent(EventType.ERROR, new Error(Error.Severity.RECOVERABLE, Error.Category.CAST, Error.Code.EDIT_TRACKS_INFO_ERROR, error))
+        );
       }
     );
   }

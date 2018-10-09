@@ -7,7 +7,7 @@ import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
 import {CastAdsController} from './cast-ads-controller';
 
-const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType, AbrMode} = core;
+const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType, AbrMode, Error} = core;
 const {
   BaseRemotePlayer,
   PlayerSnapshot,
@@ -63,13 +63,16 @@ class CastPlayer extends BaseRemotePlayer {
         this._initializeCastApi();
         this._initializeRemotePlayer();
       })
-      .catch((/* e */) => {
-        // TODO - Error handling
+      .catch(e => {
+        this._logger.error('Cast initialized error', e);
       });
   }
 
   loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
     this.reset();
+    this._remoteControl.getUIWrapper().reset();
+    this._mediaInfo = mediaInfo;
+
     if (this._playbackStarted) {
       this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_STARTED));
     }
@@ -90,17 +93,7 @@ class CastPlayer extends BaseRemotePlayer {
 
     media.customData = media.customData || {};
     media.customData.mediaInfo = mediaInfo;
-
-    return this._castSession.loadMedia(request).then(
-      () => {
-        this._mediaInfo = mediaInfo;
-        this._onLoadMediaSuccess();
-      },
-      errorCode => {
-        this._mediaInfo = null;
-        this._onLoadMediaFailed(errorCode);
-      }
-    );
+    return this._castSession.loadMedia(request).then(() => this._onLoadMediaSuccess(), error => this._onLoadMediaFailed(error));
   }
 
   getMediaInfo(): ?Object {
@@ -369,14 +362,11 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _createReadyPromise(): void {
-    this._readyPromise = new Promise((resolve, reject) => {
+    this._readyPromise = new Promise(resolve => {
       this._eventManager.listenOnce(this, EventType.TRACKS_CHANGED, () => {
         this.dispatchEvent(new FakeEvent(EventType.MEDIA_LOADED));
         resolve();
       });
-      this._eventManager.listen(this, EventType.ERROR, reject);
-    }).catch((/* e */) => {
-      // TODO - Error handling
     });
   }
 
@@ -393,6 +383,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.listen(this._tracksManager, EventType.VIDEO_TRACK_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.AUDIO_TRACK_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.TEXT_STYLE_CHANGED, e => this.dispatchEvent(e));
+    this._eventManager.listen(this._tracksManager, EventType.ERROR, e => this.dispatchEvent(e));
     this._eventManager.listen(this._stateManager, EventType.PLAYER_STATE_CHANGED, e => this._onPlayerStateChanged(e));
   }
 
@@ -459,9 +450,10 @@ class CastPlayer extends BaseRemotePlayer {
     this.dispatchEvent(new FakeEvent(EventType.ABR_MODE_CHANGED, {mode: AbrMode.AUTO}));
   }
 
-  _onLoadMediaFailed(errorCode: string): void {
-    this._logger.debug('Load media failed', errorCode);
-    // TODO
+  _onLoadMediaFailed(error: Object): void {
+    this.dispatchEvent(
+      new FakeEvent(EventType.ERROR, new Error(Error.Severity.CRITICAL, Error.Category.CAST, Error.Code.CAST_LOAD_MEDIA_FAILED, error))
+    );
   }
 
   _addSessionLifecycleListeners(): void {
@@ -542,7 +534,9 @@ class CastPlayer extends BaseRemotePlayer {
           break;
       }
     } catch (e) {
-      //TODO: log
+      this.dispatchEvent(
+        new FakeEvent(EventType.ERROR, new Error(Error.Severity.RECOVERABLE, Error.Category.CAST, Error.Code.CAST_CUSTOM_MESSAGE_PARSING_ERROR, e))
+      );
     }
   }
 
