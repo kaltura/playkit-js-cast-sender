@@ -3,7 +3,7 @@ import {cast as remote, core} from 'kaltura-player-js';
 import {INTERVAL_FREQUENCY} from './cast-player';
 
 const {TextStyleConverter} = remote;
-const {Track, TextStyle, AudioTrack, VideoTrack, TextTrack, Utils, TrackType, EventType, FakeEvent, FakeEventTarget} = core;
+const {Track, getLogger, TextStyle, AudioTrack, VideoTrack, TextTrack, Utils, TrackType, EventType, FakeEvent, FakeEventTarget} = core;
 const TRACK_TYPE_TO_INSTANCE: {[type: string]: Track} = {
   [TrackType.AUDIO]: AudioTrack,
   [TrackType.VIDEO]: VideoTrack,
@@ -18,10 +18,12 @@ class CastTracksManager extends FakeEventTarget {
   _tracks: Array<Track> = [];
   _mediaStatusIntervalId: ?number;
   _onMediaStatusUpdate: Function;
+  _logger: any;
 
   constructor(remotePlayer: Object) {
     super();
     this._remotePlayer = remotePlayer;
+    this._logger = getLogger('CastTracksManager');
     this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
     this._textStyle = new TextStyle();
     this._bindEvents();
@@ -39,6 +41,7 @@ class CastTracksManager extends FakeEventTarget {
       this._tracks = audioTracks.concat(videoTracks).concat(textTracks);
       this._addTextTrackOffOption();
     }
+    this._logger.debug('Parse tracks', this._tracks);
     this._startOnMediaStatusUpdateInterval();
     this.dispatchEvent(new FakeEvent(EventType.TRACKS_CHANGED, {tracks: this._tracks}));
   }
@@ -83,16 +86,19 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   set textStyle(style: TextStyle): void {
+    this._logger.debug('Setting text style', style);
     const textTrackStyle = TextStyleConverter.toCastTextStyle(style);
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(null, textTrackStyle);
     const mediaSession = this._castSession.getMediaSession();
     mediaSession.editTracksInfo(
       tracksInfoRequest,
       () => {
+        this._logger.debug('Setting text style succeed');
         this._textStyle = style;
         this.dispatchEvent(new FakeEvent(EventType.TEXT_STYLE_CHANGED, {textStyle: style}));
       },
       error => {
+        this._logger.debug('Setting text style failed', error);
         this.dispatchEvent(
           new FakeEvent(EventType.ERROR, new Error(Error.Severity.RECOVERABLE, Error.Category.CAST, Error.Code.EDIT_TRACKS_INFO_ERROR, error))
         );
@@ -220,6 +226,7 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   _selectTrack(newTrack: Track, currentTrack: ?Track, onSuccess: Function, onFailed: Function): void {
+    this._logger.debug('Select track', newTrack, currentTrack, this._activeTrackIds);
     if (currentTrack) {
       const index = this._activeTrackIds.indexOf(currentTrack.id);
       if (index > -1) {
@@ -234,11 +241,13 @@ class CastTracksManager extends FakeEventTarget {
     mediaSession.editTracksInfo(
       tracksInfoRequest,
       () => {
+        this._logger.debug('Select track succeeded');
         this._markActiveTrack(currentTrack, false);
         this._markActiveTrack(newTrack, true);
         onSuccess();
       },
       e => {
+        this._logger.debug('Select track failed', e);
         onFailed(e);
       }
     );

@@ -69,6 +69,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
+    this._logger.debug('Load media', mediaInfo, options);
     this.reset();
     this._remoteControl.getUIWrapper().reset();
     this._mediaInfo = mediaInfo;
@@ -422,6 +423,7 @@ class CastPlayer extends BaseRemotePlayer {
       if (mediaSession && mediaSession.customData) {
         clearInterval(this._mediaInfoIntervalId);
         this._mediaInfo = mediaSession.customData.mediaInfo;
+        this._logger.debug('Resuming session with media info', this._mediaInfo);
         this._onLoadMediaSuccess();
       }
     }, INTERVAL_FREQUENCY);
@@ -451,6 +453,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _onLoadMediaFailed(error: Object): void {
+    this._logger.debug('Load media falied', error);
     this.dispatchEvent(
       new FakeEvent(EventType.ERROR, new Error(Error.Severity.CRITICAL, Error.Category.CAST, Error.Code.CAST_LOAD_MEDIA_FAILED, error))
     );
@@ -528,6 +531,7 @@ class CastPlayer extends BaseRemotePlayer {
   _onCustomMessage(customChannel: string, customMessage: CustomMessage): void {
     try {
       const parsedCustomMessage = JSON.parse(customMessage);
+      this._logger.debug('Custom message received', parsedCustomMessage);
       switch (parsedCustomMessage.type) {
         case CustomMessageType.EVENT:
           this._handleCustomEvent(parsedCustomMessage);
