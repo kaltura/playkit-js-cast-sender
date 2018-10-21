@@ -488,10 +488,10 @@ class CastPlayer extends BaseRemotePlayer {
       audioLanguage: snapshot.audioLanguage,
       textLanguage: snapshot.textLanguage
     };
-    if (snapshot.advertising) {
+    if (snapshot.advertising && snapshot.advertising.adTagUrl) {
       this._adsController = new CastAdsController();
-      const advertising = this._config.advertising;
-      if (!advertising || !advertising.vast) {
+      const castAdvertising = this._config.advertising;
+      if (!castAdvertising || !castAdvertising.vast) {
         loadOptions.media.vmapAdsRequest = this._getAdsRequest(snapshot.advertising);
       } else {
         const breakClipId = Utils.Generator.uniqueId(5);
