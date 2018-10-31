@@ -39,3 +39,19 @@ yarn run build
 ## Documentation
 
 - [**Configuration & API**](./docs/configuration-api.md)
+
+## Compatibility
+
+TBD
+
+## Contributing
+
+Please read [CONTRIBUTING.md](https://github.com/kaltura/platform-install-packages/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/kaltura/playkit-js-providers/tags).
+
+## License
+
+This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details
