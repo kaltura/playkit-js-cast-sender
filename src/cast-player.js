@@ -26,15 +26,43 @@ export const INTERVAL_FREQUENCY = 500;
 export const SECONDS_TO_MINUTES_DIVIDER = 60;
 export const CUSTOM_CHANNEL = 'urn:x-cast:com.kaltura.cast.playkit';
 
+/**
+ * Cast Sender Player.
+ * @class CastPlayer
+ * @param {CastConfigObject} config - The cast configuration.
+ * @param {RemoteControl} remoteControl - The remote control.
+ * @extends BaseRemotePlayer
+ */
 class CastPlayer extends BaseRemotePlayer {
+  /**
+   * The remote player type.
+   * @static
+   * @type {string}
+   * @memberof CastPlayer
+   * @override
+   */
   static Type: string = 'chromecast';
 
+  /**
+   * @function isSupported
+   * @static
+   * @returns {boolean} - Whether the cast player is supported in the current runtime environment.
+   * @memberof CastPlayer
+   * @override
+   */
   static isSupported(): boolean {
     return Env.browser.name === 'Chrome';
   }
 
+  /**
+   * The cast player default configuration.
+   * @static
+   * @type {Object}
+   * @memberof CastPlayer
+   * @override
+   */
   static defaultConfig: Object = {
-    dvrThreshold: 5
+    liveEdgeThreshold: 5
   };
 
   _remoteSession: RemoteSession;
@@ -56,7 +84,7 @@ class CastPlayer extends BaseRemotePlayer {
   _mediaInfoIntervalId: number;
   _adsController: CastAdsController;
 
-  constructor(config: Object, remoteControl: RemoteControl) {
+  constructor(config: CastConfigObject, remoteControl: RemoteControl) {
     super('CastPlayer', config, remoteControl);
     CastLoader.load()
       .then(() => {
@@ -68,6 +96,14 @@ class CastPlayer extends BaseRemotePlayer {
       });
   }
 
+  /**
+   * Loads a media to the receiver application.
+   * @param {ProviderMediaInfoObject} mediaInfo - The entry media info.
+   * @param {Object} [options] - The request options. See {@link https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.LoadRequest|chrome.cast.media.LoadRequest}
+   * @returns {Promise<void>} - Promise to indicate load succeed or failed.
+   * @instance
+   * @memberof CastPlayer
+   */
   loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
     this._logger.debug('Load media', mediaInfo, options);
     this.reset();
@@ -97,14 +133,32 @@ class CastPlayer extends BaseRemotePlayer {
     return this._castSession.loadMedia(request).then(() => this._onLoadMediaSuccess(), error => this._onLoadMediaFailed(error));
   }
 
+  /**
+   * Gets the media Info.
+   * @returns {ProviderMediaInfoObject} - The media info.
+   * @instance
+   * @memberof CastPlayer
+   */
   getMediaInfo(): ?Object {
     return Utils.Object.copyDeep(this._mediaInfo);
   }
 
+  /**
+   * The cast player readiness.
+   * @returns {Promise<*>} - Promise which resolved when the cast player is ready.
+   * @instance
+   * @memberof CastPlayer
+   */
   ready(): Promise<*> {
     return this._readyPromise ? this._readyPromise : Promise.resolve();
   }
 
+  /**
+   * Start/resume playback.
+   * @instance
+   * @returns {void}
+   * @memberof CastPlayer
+   */
   play(): void {
     if (this.paused) {
       this._engine.play();
@@ -113,12 +167,24 @@ class CastPlayer extends BaseRemotePlayer {
     }
   }
 
+  /**
+   * Pause playback.
+   * @instance
+   * @returns {void}
+   * @memberof CastPlayer
+   */
   pause(): void {
     if (!this.paused) {
       this._engine.pause();
     }
   }
 
+  /**
+   * Stops and reset the cast player.
+   * @instance
+   * @returns {void}
+   * @memberof CastPlayer
+   */
   reset(): void {
     clearInterval(this._mediaInfoIntervalId);
     if (this._reset) return;
@@ -132,6 +198,12 @@ class CastPlayer extends BaseRemotePlayer {
     this.dispatchEvent(new FakeEvent(EventType.PLAYER_RESET));
   }
 
+  /**
+   * Destroys the cast player.
+   * @instance
+   * @returns {void}
+   * @memberof CastPlayer
+   */
   destroy(): void {
     clearInterval(this._mediaInfoIntervalId);
     if (this._destroyed) return;
@@ -146,11 +218,21 @@ class CastPlayer extends BaseRemotePlayer {
     this.dispatchEvent(new FakeEvent(EventType.PLAYER_DESTROY));
   }
 
+  /**
+   * @returns {boolean} - Whether the current playback is a live playback.
+   * @instance
+   * @memberof CastPlayer
+   */
   isLive(): boolean {
     const mediaInfo = this._castRemotePlayer.mediaInfo;
     return mediaInfo ? mediaInfo.streamType === chrome.cast.media.StreamType.LIVE : false;
   }
 
+  /**
+   * @returns {boolean} - Whether the current live playback has DVR window. In case of non-live playback will return false.
+   * @instance
+   * @memberof CastPlayer
+   */
   isDvr(): boolean {
     if (this.isLive()) {
       const mediaSession = this._castSession.getMediaSession();
@@ -159,13 +241,19 @@ class CastPlayer extends BaseRemotePlayer {
         if (range) {
           const startMinutes = range.start / SECONDS_TO_MINUTES_DIVIDER;
           const endMinutes = range.end / SECONDS_TO_MINUTES_DIVIDER;
-          return endMinutes - startMinutes > this._config.dvrThreshold;
+          return endMinutes - startMinutes > this._config.liveEdgeThreshold;
         }
       }
     }
     return false;
   }
 
+  /**
+   * Seeks to the live edge.
+   * @instance
+   * @returns {void}
+   * @memberof CastPlayer
+   */
   seekToLiveEdge(): void {
     const mediaSession = this._castSession.getMediaSession();
     if (mediaSession) {
@@ -176,6 +264,11 @@ class CastPlayer extends BaseRemotePlayer {
     }
   }
 
+  /**
+   * @returns {number} - The start time of the DVR window.
+   * @instance
+   * @memberof CastPlayer
+   */
   getStartTimeOfDvrWindow(): number {
     const mediaSession = this._castSession.getMediaSession();
     if (mediaSession) {
@@ -187,96 +280,245 @@ class CastPlayer extends BaseRemotePlayer {
     return 0;
   }
 
+  /**
+   * @function enableAdaptiveBitrate
+   * @description Enables automatic adaptive bitrate switching.
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
+
+  /**
+   * @function isAdaptiveBitrateEnabled
+   * @returns {boolean} - Whether adaptive bitrate is enabled.
+   * @instance
+   * @memberof CastPlayer
+   */
+
+  /**
+   * @param {string} [type] - Track type.
+   * @returns {Array<Track>} - The cast player tracks.
+   * @instance
+   * @memberof CastPlayer
+   */
   getTracks(type?: string): Array<Track> {
     return this._tracksManager.getTracks(type);
   }
 
+  /**
+   * @returns {Object} - The cast player active tracks.
+   * @instance
+   * @memberof CastPlayer
+   */
   getActiveTracks(): Object {
     return this._tracksManager.getActiveTracks();
   }
 
+  /**
+   * Select a certain track to be active.
+   * @param {Track} track - The track to activate.
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
   selectTrack(track: ?Track): void {
     this._tracksManager.selectTrack(track);
   }
 
+  /**
+   * Hides the active text track.
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
   hideTextTrack(): void {
     this._tracksManager.hideTextTrack();
   }
 
+  /**
+   * Start casting.
+   * @returns {Promise<*>} - A promise to indicate session is starting, or failed
+   * @instance
+   * @memberof CastPlayer
+   */
   startCasting(): Promise<*> {
     return cast && cast.framework ? cast.framework.CastContext.getInstance().requestSession() : Promise.reject();
   }
 
+  /**
+   * @returns {boolean} - Whether casting is available.
+   * @instance
+   * @memberof CastPlayer
+   */
   isCastAvailable(): boolean {
     return !!this._castRemotePlayer;
   }
 
+  /**
+   * Stops the current cast session.
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
   stopCasting(): void {
     this._castSession.endSession(true);
   }
 
+  /**
+   * Gets the current remote session.
+   * @returns {RemoteSession} - The remote session.
+   * @instance
+   * @memberof CastPlayer
+   */
   getCastSession(): RemoteSession {
     return Utils.Object.copyDeep(this._remoteSession);
   }
 
+  /**
+   * @return {CastAdsController} - The cast ads controller.
+   * @instance
+   * @memberof CastPlayer
+   */
   get ads(): ?CastAdsController {
     return this._adsController;
   }
 
+  /**
+   * Setter.
+   * @param {TextStyle} style - The text style to set.
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
   set textStyle(style: TextStyle): void {
     this._tracksManager.textStyle = style;
   }
 
+  /**
+   * Getter.
+   * @returns {TextStyle} - The current text style.
+   * @instance
+   * @memberof CastPlayer
+   */
   get textStyle(): ?TextStyle {
     return this._tracksManager.textStyle;
   }
 
+  /**
+   * Setter.
+   * @param {number} to - The number to set in seconds.
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
   set currentTime(to: number): void {
     this._engine.currentTime = to;
   }
 
+  /**
+   * Getter.
+   * @returns {number} - The current time in seconds.
+   * @instance
+   * @memberof CastPlayer
+   */
   get currentTime(): ?number {
     return this._engine.currentTime;
   }
 
+  /**
+   * @returns {number} - The duration in seconds.
+   * @instance
+   * @memberof CastPlayer
+   */
   get duration(): ?number {
     return this._engine.duration;
   }
 
+  /**
+   * Setter.
+   * @param {number} vol - The volume to set in the range of 0-1.
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
   set volume(vol: number): void {
     this._engine.volume = vol;
   }
 
+  /**
+   * Getter.
+   * @returns {number} - The current volume in the range of 0-1.
+   * @instance
+   * @memberof CastPlayer
+   */
   get volume(): ?number {
     return this._engine.volume;
   }
 
+  /**
+   * @returns {boolean} - Whether the cast player is in paused state.
+   * @instance
+   * @memberof CastPlayer
+   */
   get paused(): ?boolean {
     return this._engine.paused;
   }
 
+  /**
+   * @returns {boolean} - Whether the cast player is in ended state.
+   * @instance
+   * @memberof CastPlayer
+   */
   get ended(): ?boolean {
     return this._ended;
   }
 
+  /**
+   * @returns {boolean} - Whether the cast player is in seeking state.
+   * @instance
+   * @memberof CastPlayer
+   */
   get seeking(): ?boolean {
     return this._engine.seeking;
   }
 
+  /**
+   * Setter.
+   * @param {boolean} mute - The mute value to set.
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
   set muted(mute: boolean): void {
     this._engine.muted = mute;
   }
 
+  /**
+   * Getter.
+   * @returns {boolean} - The muted state.
+   * @instance
+   * @memberof CastPlayer
+   */
   get muted(): ?boolean {
     return this._engine.muted;
   }
 
+  /**
+   * @returns {string} - The current playing source url.
+   * @instance
+   * @memberof CastPlayer
+   */
   get src(): ?string {
     if (this._castRemotePlayer.mediaInfo) {
       return this._castRemotePlayer.mediaInfo.contentUrl;
     }
   }
 
+  /**
+   * @returns {string} - The current poster url.
+   * @instance
+   * @memberof CastPlayer
+   */
   get poster(): string {
     try {
       return this._castRemotePlayer.mediaInfo.metadata.images[0].url;
@@ -285,6 +527,11 @@ class CastPlayer extends BaseRemotePlayer {
     }
   }
 
+  /**
+   * @returns {string} - The current playback rate.
+   * @instance
+   * @memberof CastPlayer
+   */
   get playbackRate(): ?number {
     const mediaSession = this._castSession.getMediaSession();
     if (mediaSession) {
@@ -292,13 +539,30 @@ class CastPlayer extends BaseRemotePlayer {
     }
   }
 
+  /**
+   * @returns {string} - The active engine type.
+   * @instance
+   * @memberof CastPlayer
+   */
   get engineType(): ?string {
-    return EngineType.HTML5;
+    return EngineType.CAST;
   }
 
+  /**
+   * @returns {string} - The remote player type.
+   * @instance
+   * @memberof CastPlayer
+   */
   get type(): string {
     return CastPlayer.Type;
   }
+
+  /**
+   * @name config
+   * @returns {CastConfigObject} - The runtime cast config.
+   * @instance
+   * @memberof CastPlayer
+   */
 
   _initializeCastApi(): void {
     const options: Object = {};
