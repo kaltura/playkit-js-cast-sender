@@ -1,3 +1,5 @@
+# Configuration & API
+
 ### Table of Contents
 
 - [CastConfigObject](#castconfigobject)
