@@ -10,13 +10,13 @@
  * @example
  * // Default config
  * {
- * receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
- * autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
- * liveEdgeThreshold: 5,
- * advertising: {
- *   vast: false
- *   }
- * }
+ *  receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+ *  autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+ *  liveEdgeThreshold: 5,
+ *  advertising: {
+ *    vast: false
+ *    }
+ *  }
  */
 type _CastConfigObject = {
   receiverApplicationId: string,
