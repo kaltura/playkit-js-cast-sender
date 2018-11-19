@@ -199,6 +199,7 @@ class CastPlaybackEngine extends FakeEventTarget {
     const delta = Math.round(this._duration - this._currentTime);
     if (this._currentTime !== 0 && this._duration !== 0 && delta <= 1) {
       this._currentTime = this._duration;
+      this._paused = true;
       this.dispatchEvent(new FakeEvent(EventType.ENDED));
     }
   }
@@ -206,6 +207,7 @@ class CastPlaybackEngine extends FakeEventTarget {
   _maybeEndLivePlayback(): void {
     const range = this._mediaSession.liveSeekableRange;
     if (range && range.isLiveDone) {
+      this._paused = true;
       this.dispatchEvent(new FakeEvent(EventType.ENDED));
     }
   }
