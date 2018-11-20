@@ -16,7 +16,7 @@ class CastUI extends RemotePlayerUI {
           <Components.BottomBar>
             <Components.SeekBarPlaybackContainer showFramePreview showTimeBubble player={props.player} playerContainer={props.playerContainer} />
             <div className={style.leftControls}>
-              <Components.PlayPauseControl player={props.player} />
+              <Components.PlaybackControls player={props.player} />
               <Components.RewindControl player={props.player} step={10} />
               <Components.TimeDisplayPlaybackContainer format="current / total" />
             </div>
@@ -27,10 +27,11 @@ class CastUI extends RemotePlayerUI {
               <Components.FullscreenControl player={props.player} />
             </div>
           </Components.BottomBar>
+          <Components.CastOverlay player={props.player} />
+          <Components.OverlayAction player={props.player} />
+          <Components.PlaybackControls player={props.player} />
         </div>
         <Components.PrePlaybackPlayOverlay player={props.player} />
-        <Components.CastOverlay player={props.player} />
-        <Components.OverlayAction player={props.player} />
         <Components.CastAfterPlay player={props.player} />
       </div>
     );
@@ -46,7 +47,7 @@ class CastUI extends RemotePlayerUI {
           <Components.BottomBar>
             <Components.SeekBarLivePlaybackContainer showFramePreview showTimeBubble player={props.player} playerContainer={props.playerContainer} />
             <div className={style.leftControls}>
-              <Components.PlayPauseControl player={props.player} />
+              <Components.PlaybackControls player={props.player} />
               <Components.LiveTag player={props.player} />
             </div>
             <div className={style.rightControls}>
@@ -56,10 +57,11 @@ class CastUI extends RemotePlayerUI {
               <Components.FullscreenControl player={props.player} />
             </div>
           </Components.BottomBar>
+          <Components.CastOverlay player={props.player} />
+          <Components.OverlayAction player={props.player} />
+          <Components.PlaybackControls player={props.player} />
         </div>
         <Components.PrePlaybackPlayOverlay player={props.player} />
-        <Components.CastOverlay player={props.player} />
-        <Components.OverlayAction player={props.player} />
         <Components.CastAfterPlay player={props.player} />
       </div>
     );
@@ -95,7 +97,7 @@ class CastUI extends RemotePlayerUI {
           </div>
           <Components.BottomBar>
             <div className={style.leftControls}>
-              <Components.PlayPauseControl player={props.player} />
+              <Components.PlaybackControls player={props.player} />
               <Components.TimeDisplayAdsContainer />
             </div>
             <div className={style.rightControls}>
@@ -104,6 +106,7 @@ class CastUI extends RemotePlayerUI {
               <Components.FullscreenControl player={props.player} />
             </div>
           </Components.BottomBar>
+          <Components.PlaybackControls player={props.player} />
         </div>
       </div>
     );

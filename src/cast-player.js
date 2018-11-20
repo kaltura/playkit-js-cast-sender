@@ -6,6 +6,7 @@ import {CastPlaybackEngine} from './cast-playack-engine';
 import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
 import {CastAdsController} from './cast-ads-controller';
+import {CastAdsManager} from './cast-ads-manager';
 
 const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType, AbrMode, Error} = core;
 const {
@@ -83,6 +84,7 @@ class CastPlayer extends BaseRemotePlayer {
   _destroyed: boolean = false;
   _mediaInfoIntervalId: number;
   _adsController: CastAdsController;
+  _adsManager: CastAdsManager;
 
   constructor(config: CastConfigObject, remoteControl: RemoteControl) {
     super('CastPlayer', config, remoteControl);
@@ -160,9 +162,9 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   play(): void {
-    if (this.paused) {
+    if (!this.ended || this._adsManager.adBreak) {
       this._engine.play();
-    } else if (this._ended && this._mediaInfo) {
+    } else {
       this.loadMedia(this._mediaInfo);
     }
   }
@@ -174,9 +176,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   pause(): void {
-    if (!this.paused) {
-      this._engine.pause();
-    }
+    this._engine.pause();
   }
 
   /**
@@ -193,6 +193,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._ended = false;
     this._tracksManager.reset();
     this._engine.reset();
+    this._adsManager.reset();
     this._stateManager.reset();
     this._readyPromise = this._createReadyPromise();
     this.dispatchEvent(new FakeEvent(EventType.PLAYER_RESET));
@@ -214,6 +215,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.destroy();
     this._tracksManager.destroy();
     this._engine.destroy();
+    this._adsManager.destroy();
     this._stateManager.destroy();
     this.dispatchEvent(new FakeEvent(EventType.PLAYER_DESTROY));
   }
@@ -598,6 +600,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._tracksManager = new CastTracksManager(this._castRemotePlayer);
     this._engine = new CastPlaybackEngine(this._castRemotePlayer, this._castRemotePlayerController);
     this._stateManager = new CastStateManager(this._castRemotePlayer, this._castRemotePlayerController);
+    this._adsManager = new CastAdsManager(this);
     this._ui = new CastUI();
     this._attachListeners();
     const snapshot = this._remoteControl.getPlayerSnapshot();
@@ -655,6 +658,13 @@ class CastPlayer extends BaseRemotePlayer {
   _onEnded(e: FakeEvent): void {
     this._ended = true;
     this.dispatchEvent(e);
+    if (this._adsManager.allAdsCompleted) {
+      this.dispatchEvent(new FakeEvent(EventType.PLAYBACK_ENDED));
+    } else {
+      this._eventManager.listenOnce(this, EventType.ALL_ADS_COMPLETED, () => {
+        this.dispatchEvent(new FakeEvent(EventType.PLAYBACK_ENDED));
+      });
+    }
   }
 
   _onPlayerStateChanged(e: FakeEvent): void {
@@ -669,10 +679,11 @@ class CastPlayer extends BaseRemotePlayer {
     if (this._playbackStarted) {
       this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_ENDED));
     }
+    this.dispatchEvent(new FakeEvent(EventType.PLAYBACK_START));
     this.dispatchEvent(new FakeEvent(EventType.PLAY));
     this.dispatchEvent(new FakeEvent(EventType.FIRST_PLAY));
+    this.dispatchEvent(new FakeEvent(EventType.FIRST_PLAYING));
     this.dispatchEvent(new FakeEvent(EventType.PLAYING));
-    this.dispatchEvent(new FakeEvent(EventType.PLAYBACK_STARTED));
     if (this.paused) {
       this.dispatchEvent(new FakeEvent(EventType.PAUSE));
     }
