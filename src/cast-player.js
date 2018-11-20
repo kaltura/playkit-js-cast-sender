@@ -162,9 +162,9 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   play(): void {
-    if (!this._ended && this.paused) {
+    if (!this.ended || this._adsManager.adBreak) {
       this._engine.play();
-    } else if (this._ended && this._mediaInfo) {
+    } else {
       this.loadMedia(this._mediaInfo);
     }
   }
@@ -176,9 +176,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   pause(): void {
-    if (!this.paused) {
-      this._engine.pause();
-    }
+    this._engine.pause();
   }
 
   /**
@@ -655,7 +653,6 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.listen(this._tracksManager, EventType.TEXT_STYLE_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.ERROR, e => this.dispatchEvent(e));
     this._eventManager.listen(this._stateManager, EventType.PLAYER_STATE_CHANGED, e => this._onPlayerStateChanged(e));
-    this._eventManager.listen(this._adsManager, EventType.PLAYBACK_ENDED, e => this.dispatchEvent(e));
   }
 
   _onEnded(e: FakeEvent): void {
@@ -663,6 +660,10 @@ class CastPlayer extends BaseRemotePlayer {
     this.dispatchEvent(e);
     if (this._adsManager.allAdsCompleted) {
       this.dispatchEvent(new FakeEvent(EventType.PLAYBACK_ENDED));
+    } else {
+      this._eventManager.listenOnce(this, EventType.ALL_ADS_COMPLETED, () => {
+        this.dispatchEvent(new FakeEvent(EventType.PLAYBACK_ENDED));
+      });
     }
   }
 

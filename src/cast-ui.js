@@ -106,6 +106,7 @@ class CastUI extends RemotePlayerUI {
               <Components.FullscreenControl player={props.player} />
             </div>
           </Components.BottomBar>
+          <Components.PlaybackControls player={props.player} />
         </div>
       </div>
     );

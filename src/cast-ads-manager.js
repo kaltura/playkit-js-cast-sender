@@ -2,7 +2,7 @@
 import {CastPlayer} from './cast-player';
 import {core} from 'kaltura-player-js';
 
-const {EventManager, EventType, FakeEventTarget, FakeEvent} = core;
+const {EventManager, EventType, FakeEventTarget} = core;
 
 class CastAdsManager extends FakeEventTarget {
   _castPlayer: CastPlayer;
@@ -32,9 +32,6 @@ class CastAdsManager extends FakeEventTarget {
 
     this._eventManager.listen(this._castPlayer, EventType.ALL_ADS_COMPLETED, () => {
       this._allAdsCompleted = true;
-      if (this._castPlayer.ended) {
-        this.dispatchEvent(new FakeEvent(EventType.PLAYBACK_ENDED));
-      }
     });
   }
 
