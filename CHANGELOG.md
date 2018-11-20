@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.1.2"></a>
+## [0.1.2](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.1.1...v0.1.2) (2018-11-20)
+
+
+### Bug Fixes
+
+* cast ui & events ([#7](https://github.com/kaltura/playkit-js-cast-sender/issues/7)) ([ee2f395](https://github.com/kaltura/playkit-js-cast-sender/commit/ee2f395))
+
+
+
 <a name="0.1.1"></a>
 ## [0.1.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.1.0...v0.1.1) (2018-10-21)
 
