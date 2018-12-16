@@ -56,7 +56,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   /**
-   * The cast player default configuration.
+   * The default cast configuration.
    * @static
    * @type {Object}
    * @memberof CastPlayer
@@ -86,8 +86,8 @@ class CastPlayer extends BaseRemotePlayer {
   _adsController: CastAdsController;
   _adsManager: CastAdsManager;
 
-  constructor(config: CastConfigObject, remoteControl: RemoteControl) {
-    super('CastPlayer', config, remoteControl);
+  constructor(castConfig: CastConfigObject, remoteControl: RemoteControl) {
+    super('CastPlayer', castConfig, remoteControl);
     CastLoader.load()
       .then(() => {
         this._initializeCastApi();
@@ -121,9 +121,12 @@ class CastPlayer extends BaseRemotePlayer {
     if (options) {
       Object.keys(options).forEach(option => {
         if (option !== 'media') {
+          // $FlowFixMe
           request[option] = options[option];
         } else {
+          // $FlowFixMe
           Object.keys(options.media).forEach(mediaOption => {
+            // $FlowFixMe
             media[mediaOption] = options.media[mediaOption];
           });
         }
@@ -165,7 +168,9 @@ class CastPlayer extends BaseRemotePlayer {
     if (!this.ended || this._adsManager.adBreak) {
       this._engine.play();
     } else {
-      this.loadMedia(this._mediaInfo);
+      if (this._mediaInfo) {
+        this.loadMedia(this._mediaInfo);
+      }
     }
   }
 
@@ -243,7 +248,7 @@ class CastPlayer extends BaseRemotePlayer {
         if (range) {
           const startMinutes = range.start / SECONDS_TO_MINUTES_DIVIDER;
           const endMinutes = range.end / SECONDS_TO_MINUTES_DIVIDER;
-          return endMinutes - startMinutes > this._config.liveEdgeThreshold;
+          return endMinutes - startMinutes > this._castConfig.liveEdgeThreshold;
         }
       }
     }
@@ -561,7 +566,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   /**
    * @name config
-   * @returns {CastConfigObject} - The runtime cast config.
+   * @returns {Object} - The runtime cast player config.
    * @instance
    * @memberof CastPlayer
    */
@@ -569,8 +574,8 @@ class CastPlayer extends BaseRemotePlayer {
   _initializeCastApi(): void {
     const options: Object = {};
 
-    options.receiverApplicationId = this._config.receiverApplicationId || chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
-    options.autoJoinPolicy = this._config.autoJoinPolicy || chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED;
+    options.receiverApplicationId = this._castConfig.receiverApplicationId || chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
+    options.autoJoinPolicy = this._castConfig.autoJoinPolicy || chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED;
 
     this._logger.debug('Init cast API with options', options);
     cast.framework.CastContext.getInstance().setOptions(options);
@@ -604,6 +609,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._ui = new CastUI();
     this._attachListeners();
     const snapshot = this._remoteControl.getPlayerSnapshot();
+    this._playerConfig = snapshot.config;
     this._remoteSession = new RemoteSession(
       this._castSession.getSessionId(),
       this._castSession.getCastDevice().friendlyName,
@@ -752,20 +758,20 @@ class CastPlayer extends BaseRemotePlayer {
 
   _getLoadOptions(snapshot: PlayerSnapshot): Object {
     const loadOptions = {
-      autoplay: snapshot.autoplay,
-      currentTime: snapshot.startTime,
+      autoplay: this._playerConfig.playback.autoplay,
+      currentTime: this._playerConfig.playback.startTime,
       media: {}
     };
     if (this.textStyle && !this.textStyle.isEqual(snapshot.textStyle)) {
       loadOptions.media.textTrackStyle = TextStyleConverter.toCastTextStyle(snapshot.textStyle);
     }
     loadOptions.media.customData = {
-      audioLanguage: snapshot.audioLanguage,
-      textLanguage: snapshot.textLanguage
+      audioLanguage: this._playerConfig.playback.audioLanguage,
+      textLanguage: this._playerConfig.playback.textLanguage
     };
     if (snapshot.advertising && snapshot.advertising.adTagUrl) {
       this._adsController = new CastAdsController();
-      const castAdvertising = this._config.advertising;
+      const castAdvertising = this._castConfig.advertising;
       if (!castAdvertising || !castAdvertising.vast) {
         loadOptions.media.vmapAdsRequest = this._getAdsRequest(snapshot.advertising);
       } else {

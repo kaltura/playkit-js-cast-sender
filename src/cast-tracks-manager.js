@@ -3,7 +3,7 @@ import {cast as remote, core} from 'kaltura-player-js';
 import {INTERVAL_FREQUENCY} from './cast-player';
 
 const {TextStyleConverter} = remote;
-const {Track, getLogger, TextStyle, AudioTrack, VideoTrack, TextTrack, Utils, TrackType, EventType, FakeEvent, FakeEventTarget} = core;
+const {Track, getLogger, TextStyle, AudioTrack, VideoTrack, TextTrack, Utils, TrackType, EventType, FakeEvent, FakeEventTarget, Error} = core;
 const TRACK_TYPE_TO_INSTANCE: {[type: string]: Track} = {
   [TrackType.AUDIO]: AudioTrack,
   [TrackType.VIDEO]: VideoTrack,
