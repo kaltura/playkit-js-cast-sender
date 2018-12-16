@@ -121,9 +121,12 @@ class CastPlayer extends BaseRemotePlayer {
     if (options) {
       Object.keys(options).forEach(option => {
         if (option !== 'media') {
+          // $FlowFixMe
           request[option] = options[option];
         } else {
+          // $FlowFixMe
           Object.keys(options.media).forEach(mediaOption => {
+            // $FlowFixMe
             media[mediaOption] = options.media[mediaOption];
           });
         }
@@ -165,7 +168,9 @@ class CastPlayer extends BaseRemotePlayer {
     if (!this.ended || this._adsManager.adBreak) {
       this._engine.play();
     } else {
-      this.loadMedia(this._mediaInfo);
+      if (this._mediaInfo) {
+        this.loadMedia(this._mediaInfo);
+      }
     }
   }
 
