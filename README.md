@@ -38,7 +38,7 @@ yarn run build
 
 ## Documentation
 
-- [**Configuration & API**](./docs/configuration-api.md)
+- [**Configuration & API**](docs/api.md)
 
 ## Compatibility
 
