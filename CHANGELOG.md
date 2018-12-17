@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.2.0...v0.2.1) (2018-12-17)
+
+
+### Bug Fixes
+
+* **FEC-8595:** disconnect from cast failed ([#9](https://github.com/kaltura/playkit-js-cast-sender/issues/9)) ([62a45ee](https://github.com/kaltura/playkit-js-cast-sender/commit/62a45ee))
+
+
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.1.2...v0.2.0) (2018-12-12)
 
