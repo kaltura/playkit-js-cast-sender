@@ -419,6 +419,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   set currentTime(to: number): void {
+    this._engine.seeking = true;
     this._engine.currentTime = to;
   }
 
@@ -645,7 +646,9 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _attachListeners(): void {
-    this._eventManager.listen(this._engine, EventType.TIME_UPDATE, e => this.dispatchEvent(e));
+    this._eventManager.listen(this._engine, EventType.TIME_UPDATE, e => this._onTimeUpdate(e));
+    this._eventManager.listen(this._engine, EventType.SEEKING, e => this.dispatchEvent(e));
+    this._eventManager.listen(this._engine, EventType.SEEKED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.PAUSE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.PLAY, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.VOLUME_CHANGE, e => this.dispatchEvent(e));
@@ -673,9 +676,18 @@ class CastPlayer extends BaseRemotePlayer {
     }
   }
 
+  _onTimeUpdate(e: FakeEvent): void {
+    if (!this._engine.seeking) {
+      this.dispatchEvent(e);
+    }
+  }
+
   _onPlayerStateChanged(e: FakeEvent): void {
     if (this._ended) return;
     if (this._stateManager.currentState.type === StateType.PLAYING) {
+      if (this._engine.seeking) {
+        this._engine.seeking = false;
+      }
       this.dispatchEvent(new FakeEvent(EventType.PLAYING));
     }
     this.dispatchEvent(e);
