@@ -652,6 +652,8 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.listen(this._engine, EventType.MUTE_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.DURATION_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.ENDED, e => this._onEnded(e));
+    this._eventManager.listen(this._engine, EventType.SEEKING, e => this.dispatchEvent(e));
+    this._eventManager.listen(this._engine, EventType.SEEKED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.TRACKS_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.TEXT_TRACK_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.VIDEO_TRACK_CHANGED, e => this.dispatchEvent(e));
