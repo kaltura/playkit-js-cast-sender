@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.2"></a>
+## [0.2.2](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.2.1...v0.2.2) (2018-12-27)
+
+
+### Bug Fixes
+
+* **FEC-8616): fix(FEC-8616:** When Seeking a video, the scrubber is jumping back before the seek is applied ([#11](https://github.com/kaltura/playkit-js-cast-sender/issues/11)) ([26a9714](https://github.com/kaltura/playkit-js-cast-sender/commit/26a9714))
+
+
+
 <a name="0.2.1"></a>
 ## [0.2.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.2.0...v0.2.1) (2018-12-17)
 
