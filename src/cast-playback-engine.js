@@ -198,7 +198,7 @@ class CastPlaybackEngine extends FakeEventTarget {
   _maybeDispatchTimeUpdate(): void {
     if (!this._seeking) {
       this.dispatchEvent(new FakeEvent(EventType.TIME_UPDATE));
-    } else if (this._seekTargetTime && this._currentTime >= this._seekTargetTime) {
+    } else if (this._seekTargetTime && this._currentTime === this._seekTargetTime) {
       this._seeking = false;
       this._seekTargetTime = null;
       this.dispatchEvent(new FakeEvent(EventType.SEEKED));
