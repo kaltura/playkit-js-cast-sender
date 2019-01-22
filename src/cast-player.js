@@ -2,7 +2,7 @@
 import {cast as remote, core} from 'kaltura-player-js';
 import {CastStateManager} from './cast-state-manager';
 import {CastTracksManager} from './cast-tracks-manager';
-import {CastPlaybackEngine} from './cast-playack-engine';
+import {CastPlaybackEngine} from './cast-playback-engine';
 import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
 import {CastAdsController} from './cast-ads-controller';

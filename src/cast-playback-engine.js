@@ -14,6 +14,7 @@ class CastPlaybackEngine extends FakeEventTarget {
   _currentTime: number = 0;
   _duration: number = 0;
   _seeking: boolean = false;
+  _seekForward: boolean;
   _seekTargetTime: ?number;
   _liveCurrentTimeIntervalId: number;
   _onCurrentTimeChanged: Function;
@@ -75,6 +76,7 @@ class CastPlaybackEngine extends FakeEventTarget {
       this._seeking = true;
       this.dispatchEvent(new FakeEvent(EventType.SEEKING));
       this._remotePlayer.currentTime = this._seekTargetTime = value;
+      this._seekForward = value > this.currentTime;
       this._remotePlayerController.seek();
     }
   }
@@ -198,7 +200,10 @@ class CastPlaybackEngine extends FakeEventTarget {
   _maybeDispatchTimeUpdate(): void {
     if (!this._seeking) {
       this.dispatchEvent(new FakeEvent(EventType.TIME_UPDATE));
-    } else if (this._seekTargetTime && this._currentTime >= this._seekTargetTime) {
+    } else if (
+      this._seekTargetTime &&
+      ((this._seekForward && this.currentTime >= this._seekTargetTime) || (!this._seekForward && this.currentTime <= this._seekTargetTime))
+    ) {
       this._seeking = false;
       this._seekTargetTime = null;
       this.dispatchEvent(new FakeEvent(EventType.SEEKED));
