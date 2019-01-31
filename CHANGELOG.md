@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.4"></a>
+## [0.2.4](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.2.3...v0.2.4) (2019-01-31)
+
+
+### Bug Fixes
+
+* **FEC-8768:** seeking back on ended doesn't work when casting ([#14](https://github.com/kaltura/playkit-js-cast-sender/issues/14)) ([c124b36](https://github.com/kaltura/playkit-js-cast-sender/commit/c124b36))
+
+
+
 <a name="0.2.3"></a>
 ## [0.2.3](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.2.2...v0.2.3) (2019-01-24)
 
