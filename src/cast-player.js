@@ -578,10 +578,12 @@ class CastPlayer extends BaseRemotePlayer {
     options.autoJoinPolicy = this._castConfig.autoJoinPolicy || chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED;
 
     this._logger.debug('Init cast API with options', options);
-    cast.framework.CastContext.getInstance().setOptions(options);
-
-    const payload = new RemoteAvailablePayload(this, true);
-    this._remoteControl.onRemoteDeviceAvailable(payload);
+    const castContext = cast.framework.CastContext.getInstance();
+    castContext.setOptions(options);
+    castContext.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, event => {
+      const payload = new RemoteAvailablePayload(this, event.castState !== cast.framework.CastState.NO_DEVICES_AVAILABLE);
+      this._remoteControl.onRemoteDeviceAvailable(payload);
+    });
   }
 
   _initializeRemotePlayer(): void {
