@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.5"></a>
+## [0.2.5](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.2.4...v0.2.5) (2019-05-16)
+
+
+### Bug Fixes
+
+* **FEC-8879:** When no cast device is available, cast button appear but only before playback ([#15](https://github.com/kaltura/playkit-js-cast-sender/issues/15)) ([d79d732](https://github.com/kaltura/playkit-js-cast-sender/commit/d79d732))
+
+
+
 <a name="0.2.4"></a>
 ## [0.2.4](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.2.3...v0.2.4) (2019-01-31)
 
