@@ -18,6 +18,7 @@ class CastUI extends RemotePlayerUI {
             <div className={style.leftControls}>
               <Components.PlaybackControls player={props.player} />
               <Components.RewindControl player={props.player} step={10} />
+              <Components.ForwardControl player={props.player} step={10} />
               <Components.TimeDisplayPlaybackContainer format="current / total" />
             </div>
             <div className={style.rightControls}>
