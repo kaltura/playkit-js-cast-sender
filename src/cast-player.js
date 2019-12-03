@@ -630,8 +630,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _loadOrSetMedia(mediaObject: Object, options?: Object): void {
-    const {mediaInfo} = mediaObject;
-    const {mediaConfig} = mediaObject;
+    const {mediaInfo, mediaConfig} = mediaObject;
     if (mediaInfo) {
       this.loadMedia(mediaInfo, options);
     } else if (mediaConfig) {
