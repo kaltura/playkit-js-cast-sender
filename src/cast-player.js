@@ -77,7 +77,6 @@ class CastPlayer extends BaseRemotePlayer {
   _engine: CastPlaybackEngine;
   _readyPromise: ?Promise<*> = null;
   _mediaInfo: ?Object = null;
-  _mediaConfig: ?Object = null;
   _firstPlay: boolean = true;
   _ended: boolean = false;
   _playbackStarted: boolean = false;
@@ -102,29 +101,28 @@ class CastPlayer extends BaseRemotePlayer {
   /**
    * Loads a media to the receiver application.
    * @param {ProviderMediaInfoObject} mediaInfo - The entry media info.
-   * @param {Object} request - The cast load request options.
+   * @param {Object} [options] - The request options. See {@link https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.LoadRequest|chrome.cast.media.LoadRequest}
    * @returns {Promise<void>} - Promise to indicate load succeed or failed.
    * @instance
    * @memberof CastPlayer
    */
-  loadMedia(mediaInfo: Object, request: Object): Promise<*> {
-    this._logger.debug('Load media', mediaInfo);
-    request.media.customData.mediaInfo = this._mediaInfo = mediaInfo;
-    return this._castSession.loadMedia(request).then(() => this._onLoadMediaSuccess(), error => this._onLoadMediaFailed(error));
+  loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
+    this._logger.debug('Load media', mediaInfo, options);
+    this._mediaInfo = mediaInfo;
+    return this._loadCastMedia({mediaInfo}, options);
   }
 
   /**
    * Set a media to the receiver application.
    * @param {ProviderMediaConfigObject} mediaConfig - The entry media config.
-   * @param {Object} request - The cast load request options.
+   * @param {Object} [options] - The request options. See {@link https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.LoadRequest|chrome.cast.media.LoadRequest}
    * @returns {void}
    * @instance
    * @memberof CastPlayer
    */
-  setMedia(mediaConfig: Object, request: Object): void {
+  setMedia(mediaConfig: Object, options?: Object): void {
     this._logger.debug('Set media', mediaConfig);
-    request.media.customData.mediaConfig = this._mediaConfig = mediaConfig;
-    this._castSession.loadMedia(request).then(() => this._onLoadMediaSuccess(), error => this._onLoadMediaFailed(error));
+    this._loadCastMedia({mediaConfig}, options);
   }
 
   /**
@@ -144,7 +142,11 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   getMediaConfig(): ?Object {
-    return Utils.Object.copyDeep(this._mediaConfig);
+    const mediaConfig = {
+      sources: this._playerConfig.sources,
+      plugins: this._playerConfig.plugins
+    };
+    return Utils.Object.copyDeep(mediaConfig);
   }
 
   /**
@@ -167,11 +169,10 @@ class CastPlayer extends BaseRemotePlayer {
     if (!this.ended || this._adsManager.adBreak) {
       this._engine.play();
     } else {
-      if (this._mediaInfo) {
-        this._playMedia({mediaInfo: this._mediaInfo});
-      } else if (this._mediaConfig) {
-        this._playMedia({mediaConfig: this._mediaConfig});
-      }
+      this._loadOrSetMedia({
+        mediaInfo: this._mediaInfo,
+        mediaConfig: this.getMediaConfig()
+      });
     }
   }
 
@@ -624,20 +625,21 @@ class CastPlayer extends BaseRemotePlayer {
       this._resumeSession();
     } else if (snapshot) {
       const loadOptions = this._getLoadOptions(snapshot);
-      this._playMedia(snapshot, loadOptions);
+      this._loadOrSetMedia(snapshot, loadOptions);
     }
   }
 
-  /**
-   * Play a media by the receiver application.
-   * @param {PlayerSnapshot} snapshot - The player snapshot
-   * @param {Object} [options] - The request options. See {@link https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.LoadRequest|chrome.cast.media.LoadRequest}
-   * @returns {void}
-   * @private
-   * @instance
-   * @memberof CastPlayer
-   */
-  _playMedia(snapshot: PlayerSnapshot, options?: Object): void {
+  _loadOrSetMedia(mediaObject: Object, options?: Object): void {
+    const {mediaInfo} = mediaObject;
+    const {mediaConfig} = mediaObject;
+    if (mediaInfo) {
+      this.loadMedia(mediaInfo, options);
+    } else if (mediaConfig) {
+      this.setMedia(mediaConfig, options);
+    }
+  }
+
+  _loadCastMedia(mediaObject: Object, options?: Object): Promise<*> {
     this.reset();
     this._remoteControl.getUIWrapper().reset();
 
@@ -661,14 +663,11 @@ class CastPlayer extends BaseRemotePlayer {
         }
       });
     }
+
     media.customData = media.customData || {};
-    if (snapshot.mediaInfo) {
-      const mediaInfo = snapshot.mediaInfo;
-      this.loadMedia(mediaInfo, request);
-    } else if (snapshot.mediaConfig) {
-      const mediaConfig = snapshot.mediaConfig;
-      this.setMedia(mediaConfig, request);
-    }
+    media.customData.mediaInfo = mediaObject.mediaInfo;
+    media.customData.mediaConfig = mediaObject.mediaConfig;
+    return this._castSession.loadMedia(request).then(() => this._onLoadMediaSuccess(), error => this._onLoadMediaFailed(error));
   }
 
   _setupLocalPlayer(): void {
