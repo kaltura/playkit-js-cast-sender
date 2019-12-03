@@ -108,34 +108,21 @@ class CastPlayer extends BaseRemotePlayer {
    */
   loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
     this._logger.debug('Load media', mediaInfo, options);
-    this.reset();
-    this._remoteControl.getUIWrapper().reset();
     this._mediaInfo = mediaInfo;
+    return this._castMedia({mediaInfo}, options);
+  }
 
-    if (this._playbackStarted) {
-      this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_STARTED));
-    }
-    const media = new chrome.cast.media.MediaInfo();
-    const request = new chrome.cast.media.LoadRequest(media);
-
-    if (options) {
-      Object.keys(options).forEach(option => {
-        if (option !== 'media') {
-          // $FlowFixMe
-          request[option] = options[option];
-        } else {
-          // $FlowFixMe
-          Object.keys(options.media).forEach(mediaOption => {
-            // $FlowFixMe
-            media[mediaOption] = options.media[mediaOption];
-          });
-        }
-      });
-    }
-
-    media.customData = media.customData || {};
-    media.customData.mediaInfo = mediaInfo;
-    return this._castSession.loadMedia(request).then(() => this._onLoadMediaSuccess(), error => this._onLoadMediaFailed(error));
+  /**
+   * Set a media to the receiver application.
+   * @param {ProviderMediaConfigObject} mediaConfig - The entry media config.
+   * @param {Object} [options] - The request options. See {@link https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.LoadRequest|chrome.cast.media.LoadRequest}
+   * @returns {void}
+   * @instance
+   * @memberof CastPlayer
+   */
+  setMedia(mediaConfig: Object, options?: Object): void {
+    this._logger.debug('Set media', mediaConfig);
+    this._castMedia({mediaConfig}, options);
   }
 
   /**
@@ -146,6 +133,20 @@ class CastPlayer extends BaseRemotePlayer {
    */
   getMediaInfo(): ?Object {
     return Utils.Object.copyDeep(this._mediaInfo);
+  }
+
+  /**
+   * Gets the media config.
+   * @returns {ProviderMediaConfigObject} - The media config.
+   * @instance
+   * @memberof CastPlayer
+   */
+  getMediaConfig(): ?Object {
+    const mediaConfig = {
+      sources: this._playerConfig.sources,
+      plugins: this._playerConfig.plugins
+    };
+    return Utils.Object.copyDeep(mediaConfig);
   }
 
   /**
@@ -168,9 +169,10 @@ class CastPlayer extends BaseRemotePlayer {
     if (!this.ended || this._adsManager.adBreak) {
       this._engine.play();
     } else {
-      if (this._mediaInfo) {
-        this.loadMedia(this._mediaInfo);
-      }
+      this._loadOrSetMedia({
+        mediaInfo: this._mediaInfo,
+        mediaConfig: this.getMediaConfig()
+      });
     }
   }
 
@@ -621,11 +623,50 @@ class CastPlayer extends BaseRemotePlayer {
     this._remoteControl.onRemoteDeviceConnected(payload);
     if (this._remoteSession.resuming) {
       this._resumeSession();
-    } else if (snapshot && snapshot.mediaInfo) {
-      const mediaInfo = snapshot.mediaInfo;
+    } else if (snapshot) {
       const loadOptions = this._getLoadOptions(snapshot);
-      this.loadMedia(mediaInfo, loadOptions);
+      this._loadOrSetMedia(snapshot, loadOptions);
     }
+  }
+
+  _loadOrSetMedia(mediaObject: Object, options?: Object): void {
+    const {mediaInfo, mediaConfig} = mediaObject;
+    if (mediaInfo) {
+      this.loadMedia(mediaInfo, options);
+    } else if (mediaConfig) {
+      this.setMedia(mediaConfig, options);
+    }
+  }
+
+  _castMedia(mediaObject: Object, options?: Object): Promise<*> {
+    this.reset();
+    this._remoteControl.getUIWrapper().reset();
+
+    if (this._playbackStarted) {
+      this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_STARTED));
+    }
+    const media = new chrome.cast.media.MediaInfo();
+    const request = new chrome.cast.media.LoadRequest(media);
+
+    if (options) {
+      Object.keys(options).forEach(option => {
+        if (option !== 'media') {
+          // $FlowFixMe
+          request[option] = options[option];
+        } else {
+          // $FlowFixMe
+          Object.keys(options.media).forEach(mediaOption => {
+            // $FlowFixMe
+            media[mediaOption] = options.media[mediaOption];
+          });
+        }
+      });
+    }
+
+    media.customData = media.customData || {};
+    media.customData.mediaInfo = mediaObject.mediaInfo;
+    media.customData.mediaConfig = mediaObject.mediaConfig;
+    return this._castSession.loadMedia(request).then(() => this._onLoadMediaSuccess(), error => this._onLoadMediaFailed(error));
   }
 
   _setupLocalPlayer(): void {
