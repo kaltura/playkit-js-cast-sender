@@ -109,7 +109,7 @@ class CastPlayer extends BaseRemotePlayer {
   loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
     this._logger.debug('Load media', mediaInfo, options);
     this._mediaInfo = mediaInfo;
-    return this._loadCastMedia({mediaInfo}, options);
+    return this._castMedia({mediaInfo}, options);
   }
 
   /**
@@ -122,7 +122,7 @@ class CastPlayer extends BaseRemotePlayer {
    */
   setMedia(mediaConfig: Object, options?: Object): void {
     this._logger.debug('Set media', mediaConfig);
-    this._loadCastMedia({mediaConfig}, options);
+    this._castMedia({mediaConfig}, options);
   }
 
   /**
@@ -639,7 +639,7 @@ class CastPlayer extends BaseRemotePlayer {
     }
   }
 
-  _loadCastMedia(mediaObject: Object, options?: Object): Promise<*> {
+  _castMedia(mediaObject: Object, options?: Object): Promise<*> {
     this.reset();
     this._remoteControl.getUIWrapper().reset();
 
