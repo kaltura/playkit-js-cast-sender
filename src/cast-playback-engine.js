@@ -100,7 +100,7 @@ class CastPlaybackEngine extends FakeEventTarget {
     return this._muted;
   }
 
-  get currentTime(): ?number {
+  get currentTime(): number {
     if (this._remotePlayer.savedPlayerState) {
       return this._remotePlayer.savedPlayerState.currentTime;
     }
