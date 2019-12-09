@@ -121,7 +121,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   setMedia(mediaConfig: Object, options?: Object): void {
-    this._logger.debug('Set media', mediaConfig);
+    this._logger.debug('Set media', mediaConfig, options);
     this._castMedia({mediaConfig}, options);
   }
 
@@ -634,7 +634,7 @@ class CastPlayer extends BaseRemotePlayer {
     if (mediaInfo) {
       this.loadMedia(mediaInfo, options);
     } else if (mediaConfig) {
-      this.setMedia(mediaConfig, options);
+      this.setMedia({sources: mediaObject.mediaConfig.sources, plugins: {}}, options);
     }
   }
 
