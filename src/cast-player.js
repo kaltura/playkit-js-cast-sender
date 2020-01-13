@@ -789,7 +789,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._tracksManager.parseTracks();
     this._handleFirstPlay();
     let startTime = this._playerConfig.playback.startTime;
-    if (this.isLive() && (startTime === -1 || startTime >= this.duration - LIVE_EDGE_THRESHOLD)) {
+    if (this.isLive() && (startTime === -1 || (typeof this.duration === 'number' && startTime >= this.duration - LIVE_EDGE_THRESHOLD))) {
       this._isOnLiveEdge = true;
     }
   }
