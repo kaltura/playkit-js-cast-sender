@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.3.2"></a>
+## [0.3.2](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.3.1...v0.3.2) (2020-01-29)
+
+
+### Bug Fixes
+
+* **FEC-9618:** when casting, LIVE indicator is not on PC (Device which performs the casting to TV) ([#25](https://github.com/kaltura/playkit-js-cast-sender/issues/25)) ([126bc43](https://github.com/kaltura/playkit-js-cast-sender/commit/126bc43))
+
+
+
 <a name="0.3.1"></a>
 ## [0.3.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.3.0...v0.3.1) (2019-12-09)
 
