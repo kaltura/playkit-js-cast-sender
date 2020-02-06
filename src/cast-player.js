@@ -823,6 +823,11 @@ class CastPlayer extends BaseRemotePlayer {
         case cast.framework.SessionState.SESSION_STARTING:
           this._remoteControl.onRemoteDeviceConnecting();
           break;
+        case cast.framework.SessionState.SESSION_RESUMED:
+          if (Env.browser.major >= 73 && Env.os.name === 'Android') {
+            this._remoteControl.onRemoteDeviceConnecting();
+          }
+          break;
         case cast.framework.SessionState.SESSION_ENDING:
           this._remoteControl.onRemoteDeviceDisconnecting();
           break;
