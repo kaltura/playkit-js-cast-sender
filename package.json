@@ -1,12 +1,12 @@
 {
   "name": "@playkit-js/playkit-js-cast-sender",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "main": "dist/playkit-cast-sender.js",
   "scripts": {
     "clean": "rm -rf ./dist",
     "prebuild": "npm run clean",
     "build": "NODE_ENV=production webpack",
-    "dev": "webpack-dev-server",
+    "dev": "webpack-dev-server --https",
     "watch": "webpack --progress --colors --watch",
     "test": "NODE_ENV=test karma start --color",
     "release": "standard-version",
