@@ -640,7 +640,8 @@ class CastPlayer extends BaseRemotePlayer {
     );
     const payload = new RemoteConnectedPayload(this, this._remoteSession, this._ui);
     this._remoteControl.onRemoteDeviceConnected(payload);
-    if (this._remoteSession.resuming) {
+    if (this._remoteSession.resuming && !(Env.browser.major >= 73 && Env.os.name === 'Android')) {
+      // Android Chrome 73 and up gets SESSION_RESUMED also in the initial session
       this._resumeSession();
     } else if (snapshot) {
       const loadOptions = this._getLoadOptions(snapshot);
