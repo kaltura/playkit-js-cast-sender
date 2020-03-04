@@ -59,7 +59,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @override
    */
   static isSupported(): boolean {
-    return Env.browser.name === 'Chrome';
+    return Env.browser.name === 'Chrome' && Env.os.name !== 'iOS';
   }
 
   /**
