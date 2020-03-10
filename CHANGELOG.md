@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.3.4"></a>
+## [0.3.4](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.3.3...v0.3.4) (2020-03-10)
+
+
+### Bug Fixes
+
+* **FEC-9148:** ChromeCast is not available on ios mobile devices ([#28](https://github.com/kaltura/playkit-js-cast-sender/issues/28)) ([4406b51](https://github.com/kaltura/playkit-js-cast-sender/commit/4406b51))
+
+
+
 <a name="0.3.3"></a>
 ## [0.3.3](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.3.1...v0.3.3) (2020-02-06)
 
