@@ -272,8 +272,8 @@ class CastTracksManager extends FakeEventTarget {
 
   _markActiveTrack(track: ?Track, active: boolean): void {
     if (track) {
-      const id = track.id;
-      const origTrack = this._tracks.find(t => t.id === id);
+      const {id, language} = track;
+      const origTrack = this._tracks.find(t => t.id === id || (t.language === language && language === 'off'));
       if (origTrack) {
         origTrack.active = active;
       }
@@ -285,7 +285,6 @@ class CastTracksManager extends FakeEventTarget {
     if (textTracks && textTracks.length) {
       this._tracks.push(
         new TextTrack({
-          id: this._tracks.length + 1,
           active: true,
           index: textTracks.length,
           kind: 'subtitles',

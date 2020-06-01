@@ -877,9 +877,8 @@ class CastPlayer extends BaseRemotePlayer {
         loadOptions.media.breaks = breaks;
       }
     }
-
-    try {
-      loadOptions.media.tracks = snapshot.mediaConfig.sources.captions.map((caption, index) => {
+    if (this._playerConfig.sources.captions && this._playerConfig.sources.captions.length)
+      loadOptions.media.tracks = this._playerConfig.sources.captions.map((caption, index) => {
         let newTrack;
         newTrack = new chrome.cast.media.Track(index + 1, chrome.cast.media.TrackType.TEXT);
         Utils.Object.mergeDeep(newTrack, {
@@ -889,9 +888,6 @@ class CastPlayer extends BaseRemotePlayer {
         });
         return newTrack;
       });
-    } catch (e) {
-      // do nothing
-    }
 
     return loadOptions;
   }
