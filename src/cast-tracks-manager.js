@@ -127,7 +127,7 @@ class CastTracksManager extends FakeEventTarget {
 
   _parseTextTracks(castTextTracks: Array<Object>): Array<TextTrack> {
     const textTracks = [];
-    castTextTracks.forEach(track => {
+    const pushTextTrack = track => {
       const settings: Object = {
         id: track.trackId,
         index: track.trackId - 1,
@@ -137,6 +137,23 @@ class CastTracksManager extends FakeEventTarget {
         active: false
       };
       textTracks.push(new TextTrack(settings));
+    };
+    const inbandCastTextTracks = [];
+    const outbandCastTextTracks = [];
+    castTextTracks.forEach(track => {
+      if (track.trackContentId) {
+        outbandCastTextTracks.push(track);
+      } else {
+        inbandCastTextTracks.push(track);
+      }
+    });
+    inbandCastTextTracks.forEach(pushTextTrack);
+    outbandCastTextTracks.forEach(track => {
+      if (inbandCastTextTracks.some(inbandTrack => Track.langComparer(track.language, inbandTrack.language))) {
+        this._logger.warn('duplicated language, taking the inband option. Language: ', track.language);
+      } else {
+        pushTextTrack(track);
+      }
     });
     return textTracks;
   }
@@ -265,13 +282,12 @@ class CastTracksManager extends FakeEventTarget {
 
   _addTextTrackOffOption(): void {
     const textTracks = this._getTracksByType(TrackType.TEXT);
-    const lastTrack = textTracks[textTracks.length - 1];
     if (textTracks && textTracks.length) {
       this._tracks.push(
         new TextTrack({
-          id: lastTrack.id + 1,
+          id: this._tracks.length + 1,
           active: true,
-          index: lastTrack.index + 1,
+          index: textTracks.length,
           kind: 'subtitles',
           label: 'Off',
           language: 'off'
