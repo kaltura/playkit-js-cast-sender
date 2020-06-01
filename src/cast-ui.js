@@ -8,7 +8,7 @@ const {RemotePlayerUI} = cast;
 class CastUI extends RemotePlayerUI {
   playbackUI(props: Object): any {
     return (
-      <div className={style.playbackGuiWWrapper}>
+      <div className={style.playbackGuiWrapper}>
         <Components.KeyboardControl player={props.player} config={props.config} />
         <Components.Loading player={props.player} />
         <div className={style.playerGui} id="player-gui">
@@ -40,7 +40,7 @@ class CastUI extends RemotePlayerUI {
 
   liveUI(props: Object): any {
     return (
-      <div className={style.playbackGuiWWrapper}>
+      <div className={style.playbackGuiWrapper}>
         <Components.KeyboardControl player={props.player} config={props.config} />
         <Components.Loading player={props.player} />
         <div className={style.playerGui} id="player-gui">
@@ -70,7 +70,7 @@ class CastUI extends RemotePlayerUI {
 
   idleUI(props: Object): any {
     return (
-      <div className={style.playbackGuiWWrapper}>
+      <div className={style.playbackGuiWrapper}>
         <Components.Loading player={props.player} />
         <Components.CastOverlay player={props.player} />
       </div>
