@@ -111,7 +111,9 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   _startOnMediaStatusUpdateInterval(): void {
-    this._mediaStatusIntervalId = setInterval(this._onMediaStatusUpdate, INTERVAL_FREQUENCY);
+    if (!this._mediaStatusIntervalId) {
+      this._mediaStatusIntervalId = setInterval(this._onMediaStatusUpdate, INTERVAL_FREQUENCY);
+    }
   }
 
   _stopOnMediaStatusUpdateInterval(): void {
