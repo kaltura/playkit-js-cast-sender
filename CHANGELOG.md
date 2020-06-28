@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.4.1"></a>
+## [0.4.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.4.0...v0.4.1) (2020-06-10)
+
+
+
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.3.4...v0.4.0) (2020-06-10)
+
+
+### Bug Fixes
+
+* **FEC-10154:** cast preset is missing the font family ([#31](https://github.com/kaltura/playkit-js-cast-sender/issues/31)) ([9c81f0a](https://github.com/kaltura/playkit-js-cast-sender/commit/9c81f0a))
+* **FEC-10156:** several text tracks are active in same time while casting ([#33](https://github.com/kaltura/playkit-js-cast-sender/issues/33)) ([19a73af](https://github.com/kaltura/playkit-js-cast-sender/commit/19a73af))
+
+
+### Features
+
+* **FEC-9631:** add support for out of band text tracks on cast sdk ([#32](https://github.com/kaltura/playkit-js-cast-sender/issues/32)) ([d4eb3d9](https://github.com/kaltura/playkit-js-cast-sender/commit/d4eb3d9))
+
+
+
 <a name="0.3.4"></a>
 ## [0.3.4](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.3.3...v0.3.4) (2020-03-10)
 
