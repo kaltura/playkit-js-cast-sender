@@ -877,17 +877,25 @@ class CastPlayer extends BaseRemotePlayer {
         loadOptions.media.breaks = breaks;
       }
     }
-    if (this._playerConfig.sources.captions && this._playerConfig.sources.captions.length)
-      loadOptions.media.tracks = this._playerConfig.sources.captions.map((caption, index) => {
-        let newTrack;
-        newTrack = new chrome.cast.media.Track(index + 1, chrome.cast.media.TrackType.TEXT);
-        Utils.Object.mergeDeep(newTrack, {
-          trackContentId: caption.url,
-          name: caption.label,
-          language: caption.language
-        });
-        return newTrack;
+    if (this._playerConfig.sources.captions && this._playerConfig.sources.captions.length) {
+      const externalTracks = [];
+      this._playerConfig.sources.captions.forEach((caption, index) => {
+        if (caption.type === 'vtt' || caption.url.endsWith('.vtt')) {
+          let newTrack;
+          newTrack = new chrome.cast.media.Track(index + 1, chrome.cast.media.TrackType.TEXT);
+          Utils.Object.mergeDeep(newTrack, {
+            trackContentId: caption.url,
+            trackContentType: 'text/vtt',
+            name: caption.label,
+            language: caption.language
+          });
+          externalTracks.push(newTrack);
+        } else {
+          this._logger.warn(`Text track type ${caption.type} is unsupported by Cast receiver`);
+        }
       });
+      externalTracks.length && (loadOptions.media.tracks = externalTracks);
+    }
 
     return loadOptions;
   }
