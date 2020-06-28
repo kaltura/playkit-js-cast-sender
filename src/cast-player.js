@@ -877,13 +877,13 @@ class CastPlayer extends BaseRemotePlayer {
         loadOptions.media.breaks = breaks;
       }
     }
-    const externalCaptions = this._handleExternalCaptions();
+    const externalCaptions = this._getExternalCaptions();
     externalCaptions.length && (loadOptions.media.tracks = externalCaptions);
     return loadOptions;
   }
 
-  _handleExternalCaptions() {
-    const externalTracks = [];
+  _getExternalCaptions() {
+    const externalCaptions = [];
     if (this._playerConfig.sources.captions && this._playerConfig.sources.captions.length) {
       this._playerConfig.sources.captions.forEach((caption, index) => {
         if (caption.type === 'vtt' || caption.url.endsWith('.vtt')) {
@@ -895,13 +895,13 @@ class CastPlayer extends BaseRemotePlayer {
             name: caption.label,
             language: caption.language
           });
-          externalTracks.push(newTrack);
+          externalCaptions.push(newTrack);
         } else {
           this._logger.warn(`Text track type ${caption.type} is unsupported by Cast receiver`);
         }
       });
     }
-    return externalTracks;
+    return externalCaptions;
   }
 
   _getAdsRequest(advertising: Object): Object {
