@@ -882,19 +882,31 @@ class CastPlayer extends BaseRemotePlayer {
         loadOptions.media.breaks = breaks;
       }
     }
-    if (this._playerConfig.sources.captions && this._playerConfig.sources.captions.length)
-      loadOptions.media.tracks = this._playerConfig.sources.captions.map((caption, index) => {
-        let newTrack;
-        newTrack = new chrome.cast.media.Track(index + 1, chrome.cast.media.TrackType.TEXT);
-        Utils.Object.mergeDeep(newTrack, {
-          trackContentId: caption.url,
-          name: caption.label,
-          language: caption.language
-        });
-        return newTrack;
-      });
-
+    const externalCaptions = this._getExternalCaptions();
+    externalCaptions.length && (loadOptions.media.tracks = externalCaptions);
     return loadOptions;
+  }
+
+  _getExternalCaptions() {
+    const externalCaptions = [];
+    if (this._playerConfig.sources.captions && this._playerConfig.sources.captions.length) {
+      this._playerConfig.sources.captions.forEach((caption, index) => {
+        if (caption.type === 'vtt' || caption.url.endsWith('.vtt')) {
+          let newTrack;
+          newTrack = new chrome.cast.media.Track(index + 1, chrome.cast.media.TrackType.TEXT);
+          Utils.Object.mergeDeep(newTrack, {
+            trackContentId: caption.url,
+            trackContentType: 'text/vtt',
+            name: caption.label,
+            language: caption.language
+          });
+          externalCaptions.push(newTrack);
+        } else {
+          this._logger.warn(`Text track type ${caption.type} is unsupported by Cast receiver`);
+        }
+      });
+    }
+    return externalCaptions;
   }
 
   _getAdsRequest(advertising: Object): Object {
