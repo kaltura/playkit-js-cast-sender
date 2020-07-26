@@ -1,8 +1,9 @@
 // @flow
+/** @jsx h */
 import {cast, ui} from 'kaltura-player-js';
 
 // eslint-disable-next-line no-unused-vars
-const {style, Components} = ui;
+const {style, Components, h} = ui;
 const {RemotePlayerUI} = cast;
 
 class CastUI extends RemotePlayerUI {

@@ -6,8 +6,12 @@ const {registerRemotePlayer} = cast;
 
 declare var __VERSION__: string;
 declare var __NAME__: string;
+
+const NAME = __NAME__;
+const VERSION = __VERSION__;
+
 export {CastPlayer as RemotePlayer};
-export {__VERSION__ as VERSION, __NAME__ as NAME};
+export {VERSION, NAME};
 
 if (CastPlayer.isSupported()) {
   registerRemotePlayer(CastPlayer.Type, CastPlayer);
