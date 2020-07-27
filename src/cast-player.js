@@ -90,7 +90,7 @@ class CastPlayer extends BaseRemotePlayer {
   _reset: boolean = true;
   _destroyed: boolean = false;
   _isOnLiveEdge: boolean = false;
-  _mediaInfoIntervalId: number;
+  _mediaInfoIntervalId: IntervalID;
   _adsController: CastAdsController;
   _adsManager: CastAdsManager;
 
@@ -540,6 +540,7 @@ class CastPlayer extends BaseRemotePlayer {
     if (this._castRemotePlayer.mediaInfo) {
       return this._castRemotePlayer.mediaInfo.contentUrl;
     }
+    return '';
   }
 
   /**
@@ -565,6 +566,7 @@ class CastPlayer extends BaseRemotePlayer {
     if (mediaSession) {
       return mediaSession.playbackRate;
     }
+    return null;
   }
 
   /**
@@ -686,7 +688,10 @@ class CastPlayer extends BaseRemotePlayer {
     media.customData = media.customData || {};
     media.customData.mediaInfo = mediaObject.mediaInfo;
     media.customData.mediaConfig = mediaObject.mediaConfig;
-    return this._castSession.loadMedia(request).then(() => this._onLoadMediaSuccess(), error => this._onLoadMediaFailed(error));
+    return this._castSession.loadMedia(request).then(
+      () => this._onLoadMediaSuccess(),
+      error => this._onLoadMediaFailed(error)
+    );
   }
 
   _setupLocalPlayer(): void {

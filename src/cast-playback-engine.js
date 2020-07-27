@@ -16,7 +16,7 @@ class CastPlaybackEngine extends FakeEventTarget {
   _seeking: boolean = false;
   _seekForward: boolean;
   _seekTargetTime: ?number;
-  _liveCurrentTimeIntervalId: number;
+  _liveCurrentTimeIntervalId: IntervalID;
   _onCurrentTimeChanged: Function;
   _onIsPausedChanged: Function;
   _onDurationChanged: Function;
@@ -148,9 +148,7 @@ class CastPlaybackEngine extends FakeEventTarget {
     const onMediaInfoChanged = () => {
       this._remotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onMediaInfoChanged);
       if (this._remotePlayer.mediaInfo.streamType === chrome.cast.media.StreamType.LIVE) {
-        this._mediaSession = cast.framework.CastContext.getInstance()
-          .getCurrentSession()
-          .getMediaSession();
+        this._mediaSession = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
         this._liveCurrentTimeIntervalId = setInterval(this._onLiveCurrentTimeChanged, INTERVAL_FREQUENCY);
       } else {
         this._remotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, this._onCurrentTimeChanged);
