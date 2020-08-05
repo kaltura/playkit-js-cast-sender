@@ -1,6 +1,29 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [0.5.0](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.3.4...v0.5.0) (2020-08-05)
+
+
+### Bug Fixes
+
+* **FEC-10154:** cast preset is missing the font family ([#31](https://github.com/kaltura/playkit-js-cast-sender/issues/31)) ([9c81f0a](https://github.com/kaltura/playkit-js-cast-sender/commit/9c81f0a))
+* **FEC-10156:** several text tracks are active in same time while casting ([#33](https://github.com/kaltura/playkit-js-cast-sender/issues/33)) ([19a73af](https://github.com/kaltura/playkit-js-cast-sender/commit/19a73af))
+
+
+### Build System
+
+* fix secure api_key in travis ([#37](https://github.com/kaltura/playkit-js-cast-sender/issues/37)) ([296c80a](https://github.com/kaltura/playkit-js-cast-sender/commit/296c80a))
+* **FEC-10064:** add automatic release notes ([#30](https://github.com/kaltura/playkit-js-cast-sender/issues/30)) ([7ddf0e6](https://github.com/kaltura/playkit-js-cast-sender/commit/7ddf0e6))
+* **FEC-9495:** add permission to script for jenkins ping ([#29](https://github.com/kaltura/playkit-js-cast-sender/issues/29)) ([4135ced](https://github.com/kaltura/playkit-js-cast-sender/commit/4135ced))
+
+
+### Features
+
+* **FEC-10290:** upgrade NPM packages ([#40](https://github.com/kaltura/playkit-js-cast-sender/issues/40)) ([f0442f3](https://github.com/kaltura/playkit-js-cast-sender/commit/f0442f3))
+* **FEC-9631:** add support for out of band text tracks on cast sdk ([#32](https://github.com/kaltura/playkit-js-cast-sender/issues/32)) ([d4eb3d9](https://github.com/kaltura/playkit-js-cast-sender/commit/d4eb3d9))
+
+
 
 <a name="0.4.2"></a>
 ## [0.4.2](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.4.1...v0.4.2) (2020-07-07)
