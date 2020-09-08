@@ -1,8 +1,25 @@
-# Changelog
+# Change Log
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.5.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.5.0...v0.5.1) (2020-08-06)
+<a name="1.0.0"></a>
+# [1.0.0](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.5.1...v1.0.0) (2020-09-08)
+
+
+### Features
+
+* **FEC-10347:** expose kaltura player as a global variable instead of UMD ([#41](https://github.com/kaltura/playkit-js-cast-sender/issues/41)) ([90a4cfa](https://github.com/kaltura/playkit-js-cast-sender/commit/90a4cfa))
+
+
+### BREAKING CHANGES
+
+* **FEC-10347:** This package is not UMD anymore
+
+Solves FEC-10347
+
+
+
+## [0.5.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v0.5.0...v0.5.1) (2020-08-06)
 
 
 

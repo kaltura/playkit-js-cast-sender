@@ -1,6 +1,6 @@
 {
   "name": "@playkit-js/playkit-js-cast-sender",
-  "version": "0.5.1",
+  "version": "1.0.0",
   "keywords": [
     "cast",
     "google cast sdk",
