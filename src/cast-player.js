@@ -102,7 +102,7 @@ class CastPlayer extends BaseRemotePlayer {
         this._initializeRemotePlayer();
       })
       .catch(e => {
-        this._logger.error('Cast initialized error', e);
+        CastPlayer._logger.error('Cast initialized error', e);
       });
   }
 
@@ -115,7 +115,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
-    this._logger.debug('Load media', mediaInfo, options);
+    CastPlayer._logger.debug('Load media', mediaInfo, options);
     this._mediaInfo = mediaInfo;
     return this._castMedia({mediaInfo}, options);
   }
@@ -129,7 +129,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   setMedia(mediaConfig: Object, options?: Object): void {
-    this._logger.debug('Set media', mediaConfig, options);
+    CastPlayer._logger.debug('Set media', mediaConfig, options);
     this._castMedia({mediaConfig}, options);
   }
 
@@ -600,7 +600,7 @@ class CastPlayer extends BaseRemotePlayer {
     options.receiverApplicationId = this._castConfig.receiverApplicationId || chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
     options.autoJoinPolicy = this._castConfig.autoJoinPolicy || chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED;
 
-    this._logger.debug('Init cast API with options', options);
+    CastPlayer._logger.debug('Init cast API with options', options);
     const castContext = cast.framework.CastContext.getInstance();
     castContext.setOptions(options);
     castContext.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, event => {
@@ -624,7 +624,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _setupRemotePlayer(): void {
-    this._logger.debug('Setup remote player');
+    CastPlayer._logger.debug('Setup remote player');
     this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
     this._castSession.addMessageListener(CUSTOM_CHANNEL, (customChannel, customMessage) => this._onCustomMessage(customChannel, customMessage));
     this._tracksManager = new CastTracksManager(this._castRemotePlayer);
@@ -695,7 +695,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _setupLocalPlayer(): void {
-    this._logger.debug('Setup local player');
+    CastPlayer._logger.debug('Setup local player');
     const snapshot = new PlayerSnapshot(this);
     const payload = new RemoteDisconnectedPayload(this, snapshot);
     this.pause();
@@ -782,14 +782,14 @@ class CastPlayer extends BaseRemotePlayer {
       if (mediaSession && mediaSession.customData) {
         clearInterval(this._mediaInfoIntervalId);
         this._mediaInfo = mediaSession.customData.mediaInfo;
-        this._logger.debug('Resuming session with media info', this._mediaInfo);
+        CastPlayer._logger.debug('Resuming session with media info', this._mediaInfo);
         this._onLoadMediaSuccess();
       }
     }, INTERVAL_FREQUENCY);
   }
 
   _onLoadMediaSuccess(): void {
-    this._logger.debug('Load media success');
+    CastPlayer._logger.debug('Load media success');
     this._reset = false;
     this._triggerInitialPlayerEvents();
     this._tracksManager.parseTracks();
@@ -816,7 +816,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _onLoadMediaFailed(error: Object): void {
-    this._logger.debug('Load media falied', error);
+    CastPlayer._logger.debug('Load media falied', error);
     this.dispatchEvent(
       new FakeEvent(EventType.ERROR, new Error(Error.Severity.CRITICAL, Error.Category.CAST, Error.Code.CAST_LOAD_MEDIA_FAILED, error))
     );
@@ -902,7 +902,7 @@ class CastPlayer extends BaseRemotePlayer {
           });
           externalCaptions.push(newTrack);
         } else {
-          this._logger.warn(`Text track type ${caption.type} is unsupported by Cast receiver`);
+          CastPlayer._logger.warn(`Text track type ${caption.type} is unsupported by Cast receiver`);
         }
       });
     }
@@ -923,7 +923,7 @@ class CastPlayer extends BaseRemotePlayer {
   _onCustomMessage(customChannel: string, customMessage: CustomMessage): void {
     try {
       const parsedCustomMessage = JSON.parse(customMessage);
-      this._logger.debug('Custom message received', parsedCustomMessage);
+      CastPlayer._logger.debug('Custom message received', parsedCustomMessage);
       switch (parsedCustomMessage.type) {
         case CustomMessageType.EVENT:
           this._handleCustomEvent(parsedCustomMessage);
