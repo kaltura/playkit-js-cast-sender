@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.2](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.0.1...v1.0.2) (2020-11-03)
+
+
+### Build System
+
+* remove plugins that already exist on preset-env ([#46](https://github.com/kaltura/playkit-js-cast-sender/issues/46)) ([89d1817](https://github.com/kaltura/playkit-js-cast-sender/commit/89d1817))
+
+
+
 ### [1.0.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.0.0...v1.0.1) (2020-10-06)
 
 
