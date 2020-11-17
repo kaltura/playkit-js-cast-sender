@@ -6,10 +6,10 @@ import {ui} from 'kaltura-player-js';
 const {style, Components, h, preact} = ui;
 // eslint-disable-next-line no-unused-vars
 const {Fragment, Component} = preact;
-
 const PRESET_NAME = 'Live';
+const withKeyboardEvent = ui.components.withKeyboardEvent;
 
-@Components.withKeyboardEvent(PRESET_NAME)
+@withKeyboardEvent(PRESET_NAME)
 class LiveUI extends Component {
   /**
    * @returns {void}
