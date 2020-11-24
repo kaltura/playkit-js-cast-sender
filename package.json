@@ -52,6 +52,7 @@
     "@babel/cli": "^7.10.5",
     "@babel/core": "^7.10.5",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-decorators": "^7.10.5",
     "@babel/plugin-transform-flow-strip-types": "^7.10.4",
     "@babel/plugin-transform-react-jsx": "^7.10.4",
     "@babel/preset-env": "^7.10.4",
@@ -102,7 +103,7 @@
     "webpack-dev-server": "^3.11.0"
   },
   "peerDependencies": {
-    "kaltura-player-js": "https://github.com/kaltura/kaltura-player-js.git#v1.0.0"
+    "kaltura-player-js": "https://github.com/kaltura/kaltura-player-js.git#v1.0.5"
   },
   "publishConfig": {
     "access": "public"
@@ -114,5 +115,6 @@
     "scripts": {
       "postbump": "yarn run build && npm run commit:dist"
     }
-  }
+  },
+  "dependencies": {}
 }
