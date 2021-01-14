@@ -794,7 +794,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._triggerInitialPlayerEvents();
     this._tracksManager.parseTracks();
     this._handleFirstPlay();
-    let startTime = this._playerConfig.playback.startTime;
+    let startTime = this._playerConfig.sources.startTime;
     if (this.isLive() && (startTime === -1 || (typeof this.duration === 'number' && startTime >= this.duration - LIVE_EDGE_THRESHOLD))) {
       this._isOnLiveEdge = true;
     }
@@ -846,7 +846,7 @@ class CastPlayer extends BaseRemotePlayer {
   _getLoadOptions(snapshot: PlayerSnapshot): Object {
     const loadOptions = {
       autoplay: this._playerConfig.playback.autoplay,
-      currentTime: this._playerConfig.playback.startTime,
+      currentTime: this._playerConfig.sources.startTime,
       media: {}
     };
     if (this.textStyle && !this.textStyle.isEqual(snapshot.textStyle)) {

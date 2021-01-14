@@ -26,7 +26,7 @@
     "build": "webpack --mode production",
     "clean": "rm -rf ./dist",
     "commit:dist": "git add --force --all dist && (git commit -m 'chore: update dist' || exit 0)",
-    "dev": "webpack-dev-server --https --mode development",
+    "dev": "webpack-dev-server --mode development",
     "docs:generate": "documentation build flow-typed/** src/** -f md -o docs/api.md",
     "docs:serve": "documentation serve flow-typed/** src/** --watch",
     "eslint": "eslint . --color",
