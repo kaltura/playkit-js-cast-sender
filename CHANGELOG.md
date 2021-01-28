@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.0.3...v1.1.0) (2021-01-28)
+
+
+### Features
+
+* **FEC-10686:** move startTime config from playback to sources ([#49](https://github.com/kaltura/playkit-js-cast-sender/issues/49)) ([8b4fd98](https://github.com/kaltura/playkit-js-cast-sender/commit/8b4fd98))
+
+
+
 ### [1.0.3](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.0.2...v1.0.3) (2020-12-07)
 
 
