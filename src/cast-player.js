@@ -116,6 +116,9 @@ class CastPlayer extends BaseRemotePlayer {
    */
   loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
     CastPlayer._logger.debug('Load media', mediaInfo, options);
+    if (this._playerConfig.session && this._playerConfig.session.ks && !mediaInfo.ks) {
+      mediaInfo.ks = this._playerConfig.session.ks;
+    }
     this._mediaInfo = mediaInfo;
     return this._castMedia({mediaInfo}, options);
   }
