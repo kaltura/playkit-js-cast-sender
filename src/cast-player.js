@@ -34,13 +34,6 @@ export const CUSTOM_CHANNEL = 'urn:x-cast:com.kaltura.cast.playkit';
  */
 const LIVE_EDGE_THRESHOLD: number = 10;
 
-/**
- * Cast Sender Player.
- * @class CastPlayer
- * @param {CastConfigObject} config - The cast configuration.
- * @param {RemoteControl} remoteControl - The remote control.
- * @extends BaseRemotePlayer
- */
 class CastPlayer extends BaseRemotePlayer {
   /**
    * The remote player type.
@@ -96,6 +89,13 @@ class CastPlayer extends BaseRemotePlayer {
   _adsController: CastAdsController;
   _adsManager: CastAdsManager;
 
+  /**
+   * Cast Sender Player.
+   * @class CastPlayer
+   * @param {CastConfigObject} castConfig - The cast configuration.
+   * @param {RemoteControl} remoteControl - The remote control.
+   * @extends BaseRemotePlayer
+   */
   constructor(castConfig: CastConfigObject, remoteControl: RemoteControl) {
     super('CastPlayer', castConfig, remoteControl);
     const loadPromise = new Promise((resolve, reject) => {
@@ -929,15 +929,7 @@ class CastPlayer extends BaseRemotePlayer {
     this.dispatchEvent(new FakeEvent(customEvent.event, customEvent.payload));
   }
 
-  _isConnectedHandler = () => {
-    if (this._castRemotePlayer.isConnected) {
-      this._setupRemotePlayer();
-    } else {
-      this._setupLocalPlayer();
-    }
-  };
-
-  _sessionStateChangedHandler = event => {
+  _sessionStateChangedHandler = (event: any) => {
     switch (event.sessionState) {
       case cast.framework.SessionState.SESSION_STARTING:
         this._remoteControl.onRemoteDeviceConnecting();
@@ -953,6 +945,14 @@ class CastPlayer extends BaseRemotePlayer {
       case cast.framework.SessionState.SESSION_START_FAILED:
         this._remoteControl.onRemoteDeviceConnectFailed();
         break;
+    }
+  };
+
+  _isConnectedHandler = () => {
+    if (this._castRemotePlayer.isConnected) {
+      this._setupRemotePlayer();
+    } else {
+      this._setupLocalPlayer();
     }
   };
 }
