@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.1.0...v1.1.1) (2021-04-06)
+
+
+### Bug Fixes
+
+* **FEC-10281:** chromecast does not work after playing it once and trying it on another video ([#51](https://github.com/kaltura/playkit-js-cast-sender/issues/51)) ([dee35eb](https://github.com/kaltura/playkit-js-cast-sender/commit/dee35eb))
+* **FEC-11073:** chromecast casting doesn't work on Player V7 when content is protected with KS ([#53](https://github.com/kaltura/playkit-js-cast-sender/issues/53)) ([d1c1fdf](https://github.com/kaltura/playkit-js-cast-sender/commit/d1c1fdf))
+
+
+
 ## [1.1.0](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.0.3...v1.1.0) (2021-01-28)
 
 
