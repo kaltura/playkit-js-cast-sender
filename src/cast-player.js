@@ -237,7 +237,7 @@ class CastPlayer extends BaseRemotePlayer {
   destroy(): void {
     this._castRemotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, this._isConnectedHandler);
     this._castContext.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, this._sessionStateChangedHandler);
-    this._destroy();
+    this._cleanSessionData();
   }
 
   /**
@@ -697,7 +697,7 @@ class CastPlayer extends BaseRemotePlayer {
     const snapshot = new PlayerSnapshot(this);
     const payload = new RemoteDisconnectedPayload(this, snapshot);
     this.pause();
-    this._destroy();
+    this._cleanSessionData();
     this._remoteControl.onRemoteDeviceDisconnected(payload);
   }
 
@@ -944,7 +944,7 @@ class CastPlayer extends BaseRemotePlayer {
     }
   };
 
-  _destroy(): void {
+  _cleanSessionData(): void {
     clearInterval(this._mediaInfoIntervalId);
     if (this._destroyed) return;
     this._destroyed = true;
