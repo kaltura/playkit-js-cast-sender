@@ -235,7 +235,6 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   destroy(): void {
-    clearInterval(this._mediaInfoIntervalId);
     this._castRemotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, this._isConnectedHandler);
     this._castContext.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, this._sessionStateChangedHandler);
     this._destroy();
@@ -946,6 +945,7 @@ class CastPlayer extends BaseRemotePlayer {
   };
 
   _destroy(): void {
+    clearInterval(this._mediaInfoIntervalId);
     if (this._destroyed) return;
     this._destroyed = true;
     this._firstPlay = true;
