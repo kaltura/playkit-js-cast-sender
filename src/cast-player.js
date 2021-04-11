@@ -224,7 +224,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._engine.reset();
     this._adsManager.reset();
     this._stateManager.reset();
-    this._readyPromise = this._createReadyPromise();
+    this._createReadyPromise();
     this.dispatchEvent(new FakeEvent(EventType.PLAYER_RESET));
   }
 
@@ -238,18 +238,7 @@ class CastPlayer extends BaseRemotePlayer {
     clearInterval(this._mediaInfoIntervalId);
     this._castRemotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, this._isConnectedHandler);
     this._castContext.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, this._sessionStateChangedHandler);
-    if (this._destroyed) return;
-    this._destroyed = true;
-    this._firstPlay = true;
-    this._ended = false;
-    this._isOnLiveEdge = false;
-    this._readyPromise = null;
-    this._eventManager.destroy();
-    this._tracksManager.destroy();
-    this._engine.destroy();
-    this._adsManager.destroy();
-    this._stateManager.destroy();
-    this.dispatchEvent(new FakeEvent(EventType.PLAYER_DESTROY));
+    this._destroy();
   }
 
   /**
@@ -709,7 +698,7 @@ class CastPlayer extends BaseRemotePlayer {
     const snapshot = new PlayerSnapshot(this);
     const payload = new RemoteDisconnectedPayload(this, snapshot);
     this.pause();
-    this.destroy();
+    this._destroy();
     this._remoteControl.onRemoteDeviceDisconnected(payload);
   }
 
@@ -786,7 +775,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _resumeSession(): void {
-    this._readyPromise = this._createReadyPromise();
+    this._createReadyPromise();
     this._mediaInfoIntervalId = setInterval(() => {
       const mediaSession = this._castSession.getMediaSession();
       if (mediaSession && mediaSession.customData) {
@@ -955,6 +944,21 @@ class CastPlayer extends BaseRemotePlayer {
       this._setupLocalPlayer();
     }
   };
+
+  _destroy(): void {
+    if (this._destroyed) return;
+    this._destroyed = true;
+    this._firstPlay = true;
+    this._ended = false;
+    this._isOnLiveEdge = false;
+    this._readyPromise = null;
+    this._eventManager.destroy();
+    this._tracksManager.destroy();
+    this._engine.destroy();
+    this._adsManager.destroy();
+    this._stateManager.destroy();
+    this.dispatchEvent(new FakeEvent(EventType.PLAYER_DESTROY));
+  }
 }
 
 export {CastPlayer};
