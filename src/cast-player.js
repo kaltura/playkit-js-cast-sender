@@ -27,13 +27,6 @@ export const INTERVAL_FREQUENCY = 500;
 export const SECONDS_TO_MINUTES_DIVIDER = 60;
 export const CUSTOM_CHANNEL = 'urn:x-cast:com.kaltura.cast.playkit';
 
-/**
- * The threshold in seconds from duration that we still consider it as live edge
- * @type {number}
- * @const
- */
-const LIVE_EDGE_THRESHOLD: number = 10;
-
 class CastPlayer extends BaseRemotePlayer {
   /**
    * The remote player type.
