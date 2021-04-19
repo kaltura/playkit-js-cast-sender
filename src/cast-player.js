@@ -84,7 +84,6 @@ class CastPlayer extends BaseRemotePlayer {
   _playbackStarted: boolean = false;
   _reset: boolean = true;
   _destroyed: boolean = true;
-  _isOnLiveEdge: boolean = false;
   _mediaInfoIntervalId: IntervalID;
   _adsController: CastAdsController;
   _adsManager: CastAdsManager;
@@ -219,7 +218,6 @@ class CastPlayer extends BaseRemotePlayer {
     this._reset = true;
     this._firstPlay = true;
     this._ended = false;
-    this._isOnLiveEdge = false;
     this._tracksManager.reset();
     this._engine.reset();
     this._adsManager.reset();
@@ -256,7 +254,14 @@ class CastPlayer extends BaseRemotePlayer {
    * @public
    */
   isOnLiveEdge(): boolean {
-    return this._isOnLiveEdge;
+    if (this.isLive()) {
+      const mediaSession = this._castSession.getMediaSession();
+      if (mediaSession) {
+        const {liveSeekableRange, currentTime} = mediaSession;
+        return currentTime >= liveSeekableRange.end && !!liveSeekableRange.isMovingWindow;
+      }
+    }
+    return false;
   }
 
   /**
@@ -712,7 +717,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   _attachListeners(): void {
     this._eventManager.listen(this._engine, EventType.TIME_UPDATE, e => this.dispatchEvent(e));
-    this._eventManager.listen(this._engine, EventType.PAUSE, e => this._onPause(e));
+    this._eventManager.listen(this._engine, EventType.PAUSE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.PLAY, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.VOLUME_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.MUTE_CHANGE, e => this.dispatchEvent(e));
@@ -727,14 +732,6 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.listen(this._tracksManager, EventType.TEXT_STYLE_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.ERROR, e => this.dispatchEvent(e));
     this._eventManager.listen(this._stateManager, EventType.PLAYER_STATE_CHANGED, e => this._onPlayerStateChanged(e));
-  }
-
-  _onPause(e: FakeEvent): void {
-    this._isOnLiveEdge = false;
-    this._eventManager.listenOnce(this._engine, EventType.PLAY, () => {
-      this._isOnLiveEdge = true;
-    });
-    this.dispatchEvent(e);
   }
 
   _onEnded(e: FakeEvent): void {
@@ -792,10 +789,6 @@ class CastPlayer extends BaseRemotePlayer {
     this._triggerInitialPlayerEvents();
     this._tracksManager.parseTracks();
     this._handleFirstPlay();
-    let startTime = this._playerConfig.sources.startTime;
-    if (this.isLive() && (startTime === -1 || (typeof this.duration === 'number' && startTime >= this.duration - LIVE_EDGE_THRESHOLD))) {
-      this._isOnLiveEdge = true;
-    }
   }
 
   _triggerInitialPlayerEvents(): void {
@@ -950,7 +943,6 @@ class CastPlayer extends BaseRemotePlayer {
     this._destroyed = true;
     this._firstPlay = true;
     this._ended = false;
-    this._isOnLiveEdge = false;
     this._readyPromise = null;
     this._eventManager.destroy();
     this._tracksManager.destroy();
