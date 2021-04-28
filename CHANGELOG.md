@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.1.1...v1.2.0) (2021-04-28)
+
+
+### Bug Fixes
+
+* **FEC-11144:** Casting doesn't work if you stop it and re-initiate ([#55](https://github.com/kaltura/playkit-js-cast-sender/issues/55)) ([2530aab](https://github.com/kaltura/playkit-js-cast-sender/commit/2530aab))
+
+
+### Features
+
+* **FEC-9236:** Add support for new live Alpha in cast SDK ([#56](https://github.com/kaltura/playkit-js-cast-sender/issues/56)) ([9496b3e](https://github.com/kaltura/playkit-js-cast-sender/commit/9496b3e))
+
+
+
 ### [1.1.1](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.1.0...v1.1.1) (2021-04-06)
 
 
