@@ -111,10 +111,5 @@
   "kcc": {
     "name": "playkit-cast-sender"
   },
-  "standard-version": {
-    "scripts": {
-      "postbump": "yarn run build && npm run commit:dist"
-    }
-  },
   "dependencies": {}
 }
