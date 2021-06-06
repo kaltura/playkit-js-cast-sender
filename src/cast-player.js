@@ -27,20 +27,6 @@ export const INTERVAL_FREQUENCY = 500;
 export const SECONDS_TO_MINUTES_DIVIDER = 60;
 export const CUSTOM_CHANNEL = 'urn:x-cast:com.kaltura.cast.playkit';
 
-/**
- * The threshold in seconds from duration that we still consider it as live edge
- * @type {number}
- * @const
- */
-const LIVE_EDGE_THRESHOLD: number = 10;
-
-/**
- * Cast Sender Player.
- * @class CastPlayer
- * @param {CastConfigObject} config - The cast configuration.
- * @param {RemoteControl} remoteControl - The remote control.
- * @extends BaseRemotePlayer
- */
 class CastPlayer extends BaseRemotePlayer {
   /**
    * The remote player type.
@@ -73,6 +59,8 @@ class CastPlayer extends BaseRemotePlayer {
     liveEdgeThreshold: 5
   };
 
+  static _isAvailable: boolean = false;
+
   _remoteSession: RemoteSession;
   _castSession: Object;
   _castContext: Object;
@@ -88,22 +76,35 @@ class CastPlayer extends BaseRemotePlayer {
   _ended: boolean = false;
   _playbackStarted: boolean = false;
   _reset: boolean = true;
-  _destroyed: boolean = false;
-  _isOnLiveEdge: boolean = false;
+  _destroyed: boolean = true;
   _mediaInfoIntervalId: IntervalID;
   _adsController: CastAdsController;
   _adsManager: CastAdsManager;
 
+  /**
+   * Cast Sender Player.
+   * @class CastPlayer
+   * @param {CastConfigObject} castConfig - The cast configuration.
+   * @param {RemoteControl} remoteControl - The remote control.
+   * @extends BaseRemotePlayer
+   */
   constructor(castConfig: CastConfigObject, remoteControl: RemoteControl) {
     super('CastPlayer', castConfig, remoteControl);
-    CastLoader.load()
-      .then(() => {
-        this._initializeCastApi();
-        this._initializeRemotePlayer();
-      })
-      .catch(e => {
-        CastPlayer._logger.error('Cast initialized error', e);
-      });
+    const loadPromise = new Promise((resolve, reject) => {
+      if (!CastPlayer._isAvailable) {
+        CastLoader.load()
+          .then(() => {
+            CastPlayer._isAvailable = true;
+            this._initializeCastApi();
+            resolve();
+          })
+          .catch(reject);
+      } else {
+        resolve();
+      }
+    });
+
+    loadPromise.then(() => this._initializeRemotePlayer()).catch(error => CastPlayer._logger.error('Cast initialized error', error));
   }
 
   /**
@@ -116,6 +117,10 @@ class CastPlayer extends BaseRemotePlayer {
    */
   loadMedia(mediaInfo: Object, options?: Object): Promise<*> {
     CastPlayer._logger.debug('Load media', mediaInfo, options);
+    const ks = Utils.Object.getPropertyPath(this._playerConfig, 'session.ks');
+    if (!mediaInfo.ks && ks) {
+      mediaInfo.ks = ks;
+    }
     this._mediaInfo = mediaInfo;
     return this._castMedia({mediaInfo}, options);
   }
@@ -206,12 +211,11 @@ class CastPlayer extends BaseRemotePlayer {
     this._reset = true;
     this._firstPlay = true;
     this._ended = false;
-    this._isOnLiveEdge = false;
     this._tracksManager.reset();
     this._engine.reset();
     this._adsManager.reset();
     this._stateManager.reset();
-    this._readyPromise = this._createReadyPromise();
+    this._createReadyPromise();
     this.dispatchEvent(new FakeEvent(EventType.PLAYER_RESET));
   }
 
@@ -222,19 +226,9 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   destroy(): void {
-    clearInterval(this._mediaInfoIntervalId);
-    if (this._destroyed) return;
-    this._destroyed = true;
-    this._firstPlay = true;
-    this._ended = false;
-    this._isOnLiveEdge = false;
-    this._readyPromise = null;
-    this._eventManager.destroy();
-    this._tracksManager.destroy();
-    this._engine.destroy();
-    this._adsManager.destroy();
-    this._stateManager.destroy();
-    this.dispatchEvent(new FakeEvent(EventType.PLAYER_DESTROY));
+    this._castRemotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, this._isConnectedHandler);
+    this._castContext.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, this._sessionStateChangedHandler);
+    this._cleanSessionData();
   }
 
   /**
@@ -253,7 +247,14 @@ class CastPlayer extends BaseRemotePlayer {
    * @public
    */
   isOnLiveEdge(): boolean {
-    return this._isOnLiveEdge;
+    if (this.isLive()) {
+      const mediaSession = this._castSession.getMediaSession();
+      if (mediaSession) {
+        const {liveSeekableRange, currentTime} = mediaSession;
+        return currentTime >= liveSeekableRange.end && !!liveSeekableRange.isMovingWindow;
+      }
+    }
+    return false;
   }
 
   /**
@@ -379,7 +380,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   isCastAvailable(): boolean {
-    return !!this._castRemotePlayer;
+    return CastPlayer._isAvailable;
   }
 
   /**
@@ -611,20 +612,15 @@ class CastPlayer extends BaseRemotePlayer {
 
   _initializeRemotePlayer(): void {
     this._castContext = cast.framework.CastContext.getInstance();
-    this._addSessionLifecycleListeners();
+    this._castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, this._sessionStateChangedHandler);
     this._castRemotePlayer = new cast.framework.RemotePlayer();
     this._castRemotePlayerController = new cast.framework.RemotePlayerController(this._castRemotePlayer);
-    this._castRemotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, () => {
-      if (this._castRemotePlayer.isConnected) {
-        this._setupRemotePlayer();
-      } else {
-        this._setupLocalPlayer();
-      }
-    });
+    this._castRemotePlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, this._isConnectedHandler);
   }
 
   _setupRemotePlayer(): void {
     CastPlayer._logger.debug('Setup remote player');
+    this._destroyed = false;
     this._castSession = cast.framework.CastContext.getInstance().getCurrentSession();
     this._castSession.addMessageListener(CUSTOM_CHANNEL, (customChannel, customMessage) => this._onCustomMessage(customChannel, customMessage));
     this._tracksManager = new CastTracksManager(this._castRemotePlayer);
@@ -699,7 +695,7 @@ class CastPlayer extends BaseRemotePlayer {
     const snapshot = new PlayerSnapshot(this);
     const payload = new RemoteDisconnectedPayload(this, snapshot);
     this.pause();
-    this.destroy();
+    this._cleanSessionData();
     this._remoteControl.onRemoteDeviceDisconnected(payload);
   }
 
@@ -714,7 +710,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   _attachListeners(): void {
     this._eventManager.listen(this._engine, EventType.TIME_UPDATE, e => this.dispatchEvent(e));
-    this._eventManager.listen(this._engine, EventType.PAUSE, e => this._onPause(e));
+    this._eventManager.listen(this._engine, EventType.PAUSE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.PLAY, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.VOLUME_CHANGE, e => this.dispatchEvent(e));
     this._eventManager.listen(this._engine, EventType.MUTE_CHANGE, e => this.dispatchEvent(e));
@@ -729,14 +725,6 @@ class CastPlayer extends BaseRemotePlayer {
     this._eventManager.listen(this._tracksManager, EventType.TEXT_STYLE_CHANGED, e => this.dispatchEvent(e));
     this._eventManager.listen(this._tracksManager, EventType.ERROR, e => this.dispatchEvent(e));
     this._eventManager.listen(this._stateManager, EventType.PLAYER_STATE_CHANGED, e => this._onPlayerStateChanged(e));
-  }
-
-  _onPause(e: FakeEvent): void {
-    this._isOnLiveEdge = false;
-    this._eventManager.listenOnce(this._engine, EventType.PLAY, () => {
-      this._isOnLiveEdge = true;
-    });
-    this.dispatchEvent(e);
   }
 
   _onEnded(e: FakeEvent): void {
@@ -776,7 +764,7 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _resumeSession(): void {
-    this._readyPromise = this._createReadyPromise();
+    this._createReadyPromise();
     this._mediaInfoIntervalId = setInterval(() => {
       const mediaSession = this._castSession.getMediaSession();
       if (mediaSession && mediaSession.customData) {
@@ -794,10 +782,6 @@ class CastPlayer extends BaseRemotePlayer {
     this._triggerInitialPlayerEvents();
     this._tracksManager.parseTracks();
     this._handleFirstPlay();
-    let startTime = this._playerConfig.playback.startTime;
-    if (this.isLive() && (startTime === -1 || (typeof this.duration === 'number' && startTime >= this.duration - LIVE_EDGE_THRESHOLD))) {
-      this._isOnLiveEdge = true;
-    }
   }
 
   _triggerInitialPlayerEvents(): void {
@@ -822,31 +806,10 @@ class CastPlayer extends BaseRemotePlayer {
     );
   }
 
-  _addSessionLifecycleListeners(): void {
-    this._castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, event => {
-      switch (event.sessionState) {
-        case cast.framework.SessionState.SESSION_STARTING:
-          this._remoteControl.onRemoteDeviceConnecting();
-          break;
-        case cast.framework.SessionState.SESSION_RESUMED:
-          if (Env.browser.major >= 73 && Env.os.name === 'Android') {
-            this._remoteControl.onRemoteDeviceConnecting();
-          }
-          break;
-        case cast.framework.SessionState.SESSION_ENDING:
-          this._remoteControl.onRemoteDeviceDisconnecting();
-          break;
-        case cast.framework.SessionState.SESSION_START_FAILED:
-          this._remoteControl.onRemoteDeviceConnectFailed();
-          break;
-      }
-    });
-  }
-
   _getLoadOptions(snapshot: PlayerSnapshot): Object {
     const loadOptions = {
       autoplay: this._playerConfig.playback.autoplay,
-      currentTime: this._playerConfig.playback.startTime,
+      currentTime: this._playerConfig.sources.startTime,
       media: {}
     };
     if (this.textStyle && !this.textStyle.isEqual(snapshot.textStyle)) {
@@ -938,6 +901,48 @@ class CastPlayer extends BaseRemotePlayer {
 
   _handleCustomEvent(customEvent: CustomEventMessage): void {
     this.dispatchEvent(new FakeEvent(customEvent.event, customEvent.payload));
+  }
+
+  _sessionStateChangedHandler = (event: any) => {
+    switch (event.sessionState) {
+      case cast.framework.SessionState.SESSION_STARTING:
+        this._remoteControl.onRemoteDeviceConnecting();
+        break;
+      case cast.framework.SessionState.SESSION_RESUMED:
+        if (Env.browser.major >= 73 && Env.os.name === 'Android') {
+          this._remoteControl.onRemoteDeviceConnecting();
+        }
+        break;
+      case cast.framework.SessionState.SESSION_ENDING:
+        this._remoteControl.onRemoteDeviceDisconnecting();
+        break;
+      case cast.framework.SessionState.SESSION_START_FAILED:
+        this._remoteControl.onRemoteDeviceConnectFailed();
+        break;
+    }
+  };
+
+  _isConnectedHandler = () => {
+    if (this._castRemotePlayer.isConnected) {
+      this._setupRemotePlayer();
+    } else {
+      this._setupLocalPlayer();
+    }
+  };
+
+  _cleanSessionData(): void {
+    clearInterval(this._mediaInfoIntervalId);
+    if (this._destroyed) return;
+    this._destroyed = true;
+    this._firstPlay = true;
+    this._ended = false;
+    this._readyPromise = null;
+    this._eventManager.destroy();
+    this._tracksManager.destroy();
+    this._engine.destroy();
+    this._adsManager.destroy();
+    this._stateManager.destroy();
+    this.dispatchEvent(new FakeEvent(EventType.PLAYER_DESTROY));
   }
 }
 
