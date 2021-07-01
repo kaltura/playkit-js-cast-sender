@@ -189,7 +189,6 @@ class CastPlaybackEngine extends FakeEventTarget {
   }
 
   _onDurationChanged(): void {
-    console.log('::::: duration change from receiver :::: ')
     this._duration = this._remotePlayer.duration;
     this.dispatchEvent(new FakeEvent(EventType.DURATION_CHANGE));
   }
