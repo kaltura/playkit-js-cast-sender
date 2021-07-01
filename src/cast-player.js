@@ -251,7 +251,7 @@ class CastPlayer extends BaseRemotePlayer {
       const mediaSession = this._castSession.getMediaSession();
       if (mediaSession) {
         const {liveSeekableRange, currentTime} = mediaSession;
-        return currentTime >= liveSeekableRange.end && !!liveSeekableRange.isMovingWindow;
+        return Math.abs(currentTime - liveSeekableRange.end) <= this._castConfig.liveEdgeThreshold;
       }
     }
     return false;
@@ -461,6 +461,15 @@ class CastPlayer extends BaseRemotePlayer {
    */
   get duration(): ?number {
     return this._engine.duration;
+  }
+
+  /**
+   * @returns {number} - The live duration in seconds.
+   * @instance
+   * @memberof CastPlayer
+   */
+  get liveDuration(): ?number {
+    return this._engine.liveDuration;
   }
 
   /**
@@ -755,6 +764,7 @@ class CastPlayer extends BaseRemotePlayer {
     this.dispatchEvent(new FakeEvent(EventType.PLAY));
     this.dispatchEvent(new FakeEvent(EventType.FIRST_PLAY));
     this.dispatchEvent(new FakeEvent(EventType.FIRST_PLAYING));
+    this.dispatchEvent(new FakeEvent(EventType.DURATION_CHANGE));
     this.dispatchEvent(new FakeEvent(EventType.PLAYING));
     if (this.paused) {
       this.dispatchEvent(new FakeEvent(EventType.PAUSE));
