@@ -86,7 +86,7 @@ class CastPlaybackEngine extends FakeEventTarget {
   }
 
   get liveDuration(): ?number {
-    const range = this._mediaSession?.liveSeekableRange;
+    const range = this._mediaSession && this._mediaSession.liveSeekableRange;
     if (range) {
       return range.end;
     }
@@ -227,7 +227,7 @@ class CastPlaybackEngine extends FakeEventTarget {
   }
 
   _maybeEndLivePlayback(): void {
-    const range = this._mediaSession?.liveSeekableRange;
+    const range = this._mediaSession && this._mediaSession.liveSeekableRange;
     if (range && range.isLiveDone) {
       this._paused = true;
       this.dispatchEvent(new FakeEvent(EventType.ENDED));
