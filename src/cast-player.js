@@ -60,6 +60,7 @@ class CastPlayer extends BaseRemotePlayer {
   };
 
   static _isAvailable: boolean = false;
+  static _loadPromise: any = null;
 
   _remoteSession: RemoteSession;
   _castSession: Object;
@@ -90,21 +91,31 @@ class CastPlayer extends BaseRemotePlayer {
    */
   constructor(castConfig: CastConfigObject, remoteControl: RemoteControl) {
     super('CastPlayer', castConfig, remoteControl);
-    const loadPromise = new Promise((resolve, reject) => {
-      if (!CastPlayer._isAvailable) {
-        CastLoader.load()
-          .then(() => {
-            CastPlayer._isAvailable = true;
-            this._initializeCastApi();
-            resolve();
-          })
-          .catch(reject);
-      } else {
-        resolve();
-      }
-    });
 
-    loadPromise.then(() => this._initializeRemotePlayer()).catch(error => CastPlayer._logger.error('Cast initialized error', error));
+    if (!CastPlayer._loadPromise) {
+      CastPlayer._loadPromise = new Promise((resolve, reject) => {
+        if (!CastPlayer._isAvailable) {
+          CastLoader.load()
+            .then(() => {
+              CastPlayer._isAvailable = true;
+              resolve();
+            })
+            .catch(reject);
+        } else {
+          resolve();
+        }
+      });
+    }
+
+    CastPlayer._loadPromise
+      .then(() => {
+        this._initializeCastApi();
+        this._initializeRemotePlayer();
+      })
+      .catch(error => {
+        CastPlayer._logger.error('Cast initialized error', error);
+        CastPlayer._loadPromise = null;
+      });
   }
 
   /**
@@ -637,9 +648,17 @@ class CastPlayer extends BaseRemotePlayer {
     this._stateManager = new CastStateManager(this._castRemotePlayer, this._castRemotePlayerController);
     this._adsManager = new CastAdsManager(this);
     this._ui = new CastUI();
-    this._attachListeners();
     const snapshot = this._remoteControl.getPlayerSnapshot();
     this._playerConfig = snapshot.config;
+
+    const mediaSession = this._castSession.getMediaSession();
+    const localEntryId = snapshot.config.sources.id;
+    const savedEntryId = Utils.Object.getPropertyPath(mediaSession, 'customData.mediaInfo.entryId');
+    if (!(this.isCastInitiator() || (savedEntryId && savedEntryId === localEntryId))) {
+      return;
+    }
+
+    this._attachListeners();
     this._remoteSession = new RemoteSession(
       this._castSession.getSessionId(),
       this._castSession.getCastDevice().friendlyName,
@@ -700,6 +719,13 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _setupLocalPlayer(): void {
+    const mediaSession = this._castSession.getMediaSession();
+    const localEntryId = this._playerConfig.sources.id;
+    const savedEntryId = Utils.Object.getPropertyPath(mediaSession, 'customData.mediaInfo.entryId');
+    if (!savedEntryId || savedEntryId !== localEntryId) {
+      return;
+    }
+
     CastPlayer._logger.debug('Setup local player');
     const snapshot = new PlayerSnapshot(this);
     const payload = new RemoteDisconnectedPayload(this, snapshot);
@@ -936,6 +962,7 @@ class CastPlayer extends BaseRemotePlayer {
     if (this._castRemotePlayer.isConnected) {
       this._setupRemotePlayer();
     } else {
+      this._isCastInitiator = false;
       this._setupLocalPlayer();
     }
   };
