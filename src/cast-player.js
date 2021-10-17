@@ -60,7 +60,7 @@ class CastPlayer extends BaseRemotePlayer {
   };
 
   static _isAvailable: boolean = false;
-  static _loadPromise: any = null;
+  static _loadPromise: ?Promise<void> = null;
 
   _remoteSession: RemoteSession;
   _castSession: Object;
@@ -654,6 +654,8 @@ class CastPlayer extends BaseRemotePlayer {
     const mediaSession = this._castSession.getMediaSession();
     const localEntryId = snapshot.config.sources.id;
     const savedEntryId = Utils.Object.getPropertyPath(mediaSession, 'customData.mediaInfo.entryId');
+
+    // savedEntryId === localEntryId if a player has started casting and the page was refreshed
     if (!(this.isCastInitiator() || (savedEntryId && savedEntryId === localEntryId))) {
       return;
     }
