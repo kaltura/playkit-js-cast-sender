@@ -20,7 +20,8 @@ const {
   TextStyleConverter,
   CustomMessageType,
   CustomMessage,
-  CustomEventMessage
+  CustomEventMessage,
+  RemotePlayerType
 } = remote;
 
 export const INTERVAL_FREQUENCY = 500;
@@ -35,7 +36,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    * @override
    */
-  static Type: string = 'chromecast';
+  static Type: string = RemotePlayerType.CHROMECAST;
 
   /**
    * @function isSupported
@@ -63,6 +64,7 @@ class CastPlayer extends BaseRemotePlayer {
   static _loadPromise: ?Promise<void> = null;
   static _castRemotePlayer: Object;
   static _castRemotePlayerController: Object;
+  static _loadedPlayerCount = 0;
 
   _remoteSession: RemoteSession;
   _castSession: Object;
@@ -108,7 +110,10 @@ class CastPlayer extends BaseRemotePlayer {
     }
 
     CastPlayer._loadPromise
-      .then(() => this._registerCastEventListeners())
+      .then(() => {
+        this._registerCastEventListeners();
+        ++CastPlayer._loadedPlayerCount;
+      })
       .catch(error => {
         CastPlayer._logger.error('Cast initialized error', error);
         CastPlayer._loadPromise = null;
@@ -235,6 +240,7 @@ class CastPlayer extends BaseRemotePlayer {
    * @memberof CastPlayer
    */
   destroy(): void {
+    --CastPlayer._loadedPlayerCount;
     CastPlayer._castRemotePlayerController.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, this._isConnectedHandler);
     const castContext = cast.framework.CastContext.getInstance();
     castContext.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, this._sessionStateChangedHandler);
@@ -947,10 +953,9 @@ class CastPlayer extends BaseRemotePlayer {
     const localEntryId = snapshot.config.sources.id;
 
     if (CastPlayer._castRemotePlayer.isConnected) {
-      // isCastInitiator is true if this player initiated the cast
       // savedEntryId === localEntryId if this player has started casting and the page was refreshed
       const savedEntryId = this._getSessionEntryId(cast.framework.CastContext.getInstance().getCurrentSession());
-      if (this.isCastInitiator() || (savedEntryId && savedEntryId === localEntryId)) {
+      if (this._hasInitiatedCast() || (savedEntryId && savedEntryId === localEntryId)) {
         this._setupRemotePlayer();
       }
     } else {
@@ -981,6 +986,10 @@ class CastPlayer extends BaseRemotePlayer {
   _getSessionEntryId(castSession: Object) {
     if (!castSession) return null;
     return Utils.Object.getPropertyPath(castSession.getMediaSession(), 'customData.mediaInfo.entryId');
+  }
+
+  _hasInitiatedCast() {
+    return this._isCastInitiator || CastPlayer._loadedPlayerCount === 1;
   }
 }
 
