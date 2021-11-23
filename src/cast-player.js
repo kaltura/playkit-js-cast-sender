@@ -960,9 +960,9 @@ class CastPlayer extends BaseRemotePlayer {
       }
     } else {
       // savedEntryId === localEntryId if this player's cast session was stopped by the user
+      this._isCastInitiator = false;
       const savedEntryId = this._getSessionEntryId(this._castSession);
       if (savedEntryId && savedEntryId === localEntryId) {
-        this._isCastInitiator = false;
         this._setupLocalPlayer();
       }
     }
