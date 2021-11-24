@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.3](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.2.2...v1.2.3) (2021-11-24)
+
+
+### Bug Fixes
+
+* **FEC-11156:** cast button appears for one player only when multiple players configured on the page and casting failed ([#70](https://github.com/kaltura/playkit-js-cast-sender/issues/70)) ([30595d8](https://github.com/kaltura/playkit-js-cast-sender/commit/30595d8))
+* **FEC-11708:** reset cast initiator on disconnect ([#72](https://github.com/kaltura/playkit-js-cast-sender/issues/72)) ([dbadddb](https://github.com/kaltura/playkit-js-cast-sender/commit/dbadddb))
+
+
+### Build System
+
+* **FEC-11389:** reduce builds from travis ([8ffbf11](https://github.com/kaltura/playkit-js-cast-sender/commit/8ffbf11))
+
+
+
 ### [1.2.2](https://github.com/kaltura/playkit-js-cast-sender/compare/v1.2.1...v1.2.2) (2021-07-04)
 
 
