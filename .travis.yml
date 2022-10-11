@@ -3,8 +3,10 @@ sudo: required
 dist: xenial
 language: node_js
 node_js:
-  - 'node'
-
+  - 17
+env:
+  global:
+    - NODE_OPTIONS="--openssl-legacy-provider"
 addons:
   chrome: stable
 
@@ -51,7 +53,7 @@ jobs:
           api_key: $GH_TOKEN
           file_glob: true
           file: dist/*
-          prerelease: true
+          prerelease: false
           skip_cleanup: true
           on:
             branch: master
