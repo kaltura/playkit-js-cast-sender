@@ -1,5 +1,6 @@
 # PlayKit JS Cast Sender
 
+[![Build Status](https://github.com/kaltura/kaltura/playkit-js-cast-sender/actions/workflows/run_canary_full_flow.yaml/badge.svg)](https://github.com/kaltura/kaltura/playkit-js-cast-sender/actions/workflows/run_canary_full_flow.yaml)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 PlayKit JS Cast Sender integrates the [Cast Chrome Sender Framework API] with the [Kaltura Player JS].
