@@ -1,6 +1,6 @@
 // @flow
 import {CastPlayer} from './cast-player';
-import {core} from 'kaltura-player-js';
+import {core} from '@playkit-js/kaltura-player-js';
 
 const {EventManager, EventType, FakeEventTarget} = core;
 

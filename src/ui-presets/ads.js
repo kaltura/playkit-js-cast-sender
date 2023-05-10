@@ -1,6 +1,6 @@
 //@flow
 /** @jsx h */
-import {ui} from 'kaltura-player-js';
+import {ui} from '@playkit-js/kaltura-player-js';
 
 // eslint-disable-next-line no-unused-vars
 const {style, Components, h, preact} = ui;
