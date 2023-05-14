@@ -1,6 +1,6 @@
 // @flow
 /** @jsx h */
-import {cast} from 'kaltura-player-js';
+import {cast} from '@playkit-js/kaltura-player-js';
 import * as presets from './ui-presets';
 
 const {RemotePlayerUI} = cast;
