@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.2.6 (2023-05-17)
+
+
+### Bug Fixes
+
+* **FEC-13123:** replace travis with github actions ([#97](https://github.com/kaltura/playkit-js-cast-sender/issues/97)) ([18ee649](https://github.com/kaltura/playkit-js-cast-sender/commit/18ee649))
+
+
+
 ### 1.2.5 (2023-05-07)
 
 
