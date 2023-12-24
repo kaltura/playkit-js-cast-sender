@@ -39,20 +39,9 @@ class LiveUI extends Component {
             </Fragment>
             <Fragment>
               <Components.BottomBar
-                leftControls={
-                  <Fragment>
-                    <Components.PlaybackControls />
-                    <Components.LiveTag />
-                  </Fragment>
-                }
-                rightControls={
-                  <Fragment>
-                    <Components.VolumeControl />
-                    <Components.LanguageControl />
-                    <Components.CastControl />
-                    <Components.FullscreenControl />
-                  </Fragment>
-                }>
+                leftControls={[Components.PlaybackControls, Components.LiveTag]}
+                //todo:missing component.LanguageControl
+                rightControls={[Components.VolumeControl, Components.SettingsControl, Components.CastControl, Components.FullscreenControl]}>
                 <Components.SeekBarLivePlaybackContainer showFramePreview showTimeBubble playerContainer={this.props.playerContainer} />
               </Components.BottomBar>
             </Fragment>

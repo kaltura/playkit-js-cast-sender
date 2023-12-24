@@ -28,32 +28,10 @@ function AdsUI(props: any): ?React$Element<any> {
             <Components.AdSkip />
           </Fragment>
           <Fragment>
-            <Components.TopBar
-              leftControls={
-                <Fragment>
-                  <Components.AdNotice />
-                </Fragment>
-              }
-              rightControls={
-                <Fragment>
-                  <Components.AdLearnMore />
-                </Fragment>
-              }
-            />
+            <Components.TopBar leftControls={[Components.AdNotice]} rightControls={[Components.AdLearnMore]} />
             <Components.BottomBar
-              leftControls={
-                <Fragment>
-                  <Components.PlaybackControls />
-                  <Components.TimeDisplayAdsContainer />
-                </Fragment>
-              }
-              rightControls={
-                <Fragment>
-                  <Components.VolumeControl />
-                  <Components.CastControl />
-                  <Components.FullscreenControl />
-                </Fragment>
-              }
+              leftControls={[Components.PlaybackControls, Components.TimeDisplayAdsContainer]}
+              rightControls={[Components.VolumeControl, Components.CastControl, Components.FullscreenControl]}
             />
           </Fragment>
         </Components.GuiArea>

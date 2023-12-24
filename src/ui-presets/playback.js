@@ -39,22 +39,14 @@ class PlaybackUI extends Component {
             </Fragment>
             <Fragment>
               <Components.BottomBar
-                leftControls={
-                  <Fragment>
-                    <Components.PlaybackControls />
-                    <Components.RewindControl step={10} />
-                    <Components.ForwardControl step={10} />
-                    <Components.TimeDisplayPlaybackContainer format="current / total" />
-                  </Fragment>
-                }
-                rightControls={
-                  <Fragment>
-                    <Components.VolumeControl />
-                    <Components.LanguageControl />
-                    <Components.CastControl />
-                    <Components.FullscreenControl />
-                  </Fragment>
-                }>
+                leftControls={[
+                  Components.PlaybackControls,
+                  Components.RewindControl,
+                  Components.ForwardControl,
+                  Components.TimeDisplayPlaybackContainer
+                ]}
+                //todo:missing component.LanguageControl
+                rightControls={[Components.VolumeControl, Components.SettingsControl, Components.CastControl, Components.FullscreenControl]}>
                 <Components.SeekBarPlaybackContainer showFramePreview showTimeBubble playerContainer={this.props.playerContainer} />
               </Components.BottomBar>
             </Fragment>
