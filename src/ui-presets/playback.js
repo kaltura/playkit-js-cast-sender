@@ -28,40 +28,28 @@ class PlaybackUI extends Component {
   render() {
     return (
       <div className={style.playbackGuiWrapper}>
-        <Components.Loading />
-        <div className={style.playerGui} id="player-gui">
-          <Components.GuiArea>
-            <Fragment>
-              <Components.OverlayPortal />
-              <Components.CastOverlay />
-              <Components.OverlayAction />
-              <Components.PlaybackControls className={style.centerPlaybackControls} />
-            </Fragment>
-            <Fragment>
-              <Components.BottomBar
-                leftControls={
-                  <Fragment>
-                    <Components.PlaybackControls />
-                    <Components.RewindControl step={10} />
-                    <Components.ForwardControl step={10} />
-                    <Components.TimeDisplayPlaybackContainer format="current / total" />
-                  </Fragment>
-                }
-                rightControls={
-                  <Fragment>
-                    <Components.VolumeControl />
-                    <Components.LanguageControl />
-                    <Components.CastControl />
-                    <Components.FullscreenControl />
-                  </Fragment>
-                }>
-                <Components.SeekBarPlaybackContainer showFramePreview showTimeBubble playerContainer={this.props.playerContainer} />
-              </Components.BottomBar>
-            </Fragment>
-          </Components.GuiArea>
-        </div>
-        <Components.PrePlaybackPlayOverlay />
-        <Components.CastAfterPlay />
+        <Components.PlayerArea name={'PresetArea'}>
+          <Components.Loading />
+          <div className={style.playerGui} id="player-gui">
+            <Components.GuiArea>
+              <Fragment>
+                <Components.OverlayPortal />
+                <Components.CastOverlay />
+                <Components.OverlayAction />
+                <Components.PlaybackControls className={style.centerPlaybackControls} />
+              </Fragment>
+              <Fragment>
+                <Components.BottomBar
+                  leftControls={[Components.PlaybackControls, Components.Rewind, Components.Forward, Components.TimeDisplayPlaybackContainer]}
+                  rightControls={[Components.Volume, Components.Settings, Components.Cast, Components.Fullscreen]}>
+                  <Components.SeekBarPlaybackContainer showFramePreview showTimeBubble playerContainer={this.props.playerContainer} />
+                </Components.BottomBar>
+              </Fragment>
+            </Components.GuiArea>
+          </div>
+          <Components.PrePlaybackPlayOverlay />
+          <Components.CastAfterPlay />
+        </Components.PlayerArea>
       </div>
     );
   }
