@@ -82,6 +82,7 @@ class CastPlayer extends BaseRemotePlayer {
   _mediaInfoIntervalId: IntervalID;
   _adsController: CastAdsController;
   _adsManager: CastAdsManager;
+  _sourceUrl: string;
 
   /**
    * Cast Sender Player.
@@ -656,6 +657,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._adsManager = new CastAdsManager(this);
     const snapshot = this._remoteControl.getPlayerSnapshot();
     this._playerConfig = snapshot.config;
+    this._sourceUrl = this._remoteControl.getPlayerSelectedSource();
     this._remoteSession = new RemoteSession(
       this._castSession.getSessionId(),
       this._castSession.getCastDevice().friendlyName,
@@ -688,7 +690,7 @@ class CastPlayer extends BaseRemotePlayer {
     if (this._playbackStarted) {
       this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_STARTED));
     }
-    const media = new chrome.cast.media.MediaInfo();
+    const media = new chrome.cast.media.MediaInfo(this._sourceUrl.url);
     const request = new chrome.cast.media.LoadRequest(media);
 
     if (options) {
