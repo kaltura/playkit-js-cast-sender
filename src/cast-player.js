@@ -987,7 +987,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   _getSessionEntryId(castSession: Object) {
     if (!castSession) return null;
-    return Utils.Object.getPropertyPath(castSession.getMediaSession(), 'customData.mediaInfo.entryId');
+    return Utils.Object.getPropertyPath(castSession.getMediaSession(), 'media.customData.mediaInfo.entryId');
   }
 
   _hasInitiatedCast() {
