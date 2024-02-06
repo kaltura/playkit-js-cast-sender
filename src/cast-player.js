@@ -140,6 +140,7 @@ class CastPlayer extends BaseRemotePlayer {
     return this._castMedia({mediaInfo}, options);
   }
 
+
   /**
    * Set a media to the receiver application.
    * @param {ProviderMediaConfigObject} mediaConfig - The entry media config.
@@ -952,7 +953,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   _isConnectedHandler = () => {
     const snapshot = this._remoteControl.getPlayerSnapshot();
-    const localEntryId = snapshot.config.sources.id;
+    const localEntryId = snapshot.mediaInfo.entryId;
 
     if (CastPlayer._castRemotePlayer.isConnected) {
       // savedEntryId === localEntryId if this player has started casting and the page was refreshed
