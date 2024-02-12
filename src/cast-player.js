@@ -668,7 +668,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._remoteControl.onRemoteDeviceConnected(payload);
     if (this._remoteSession.resuming && !(Env.browser.major >= 73 && Env.os.name === 'Android')) {
       // Android Chrome 73 and up gets SESSION_RESUMED also in the initial session
-      this._resumeSession();
+      this._resumeSession(snapshot);
     } else if (snapshot) {
       const loadOptions = this._getLoadOptions(snapshot);
       this._loadOrSetMedia(snapshot, loadOptions);
@@ -792,12 +792,22 @@ class CastPlayer extends BaseRemotePlayer {
     this._playbackStarted = true;
   }
 
-  _resumeSession(): void {
+  _resumeSession(snapshot): void {
     this._createReadyPromise();
+    let resumeSessionTimer = setTimeout(
+      () => {
+        clearInterval(this._mediaInfoIntervalId);
+        const loadOptions = this._getLoadOptions(snapshot);
+        this._loadOrSetMedia(snapshot, loadOptions);
+      },
+      5000,
+      snapshot
+    );
     this._mediaInfoIntervalId = setInterval(() => {
       const mediaSession = this._castSession.getMediaSession();
       if (mediaSession && mediaSession.customData) {
         clearInterval(this._mediaInfoIntervalId);
+        clearTimeout(resumeSessionTimer);
         this._mediaInfo = mediaSession.customData.mediaInfo;
         CastPlayer._logger.debug('Resuming session with media info', this._mediaInfo);
         this._onLoadMediaSuccess();
