@@ -811,8 +811,10 @@ class CastPlayer extends BaseRemotePlayer {
         CastPlayer._logger.debug('Resuming session with media info', this._mediaInfo);
         this._onLoadMediaSuccess();
       } else if (mediaSession && mediaSession.playerState.toLowerCase() === EventType.PLAYING) {
+        //there is no customData but it play on screen
         clearInterval(this._mediaInfoIntervalId);
         clearTimeout(resumeSessionTimer);
+        this._onLoadMediaSuccess();
       }
     }, INTERVAL_FREQUENCY);
   }
@@ -965,7 +967,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   _isConnectedHandler = () => {
     const snapshot = this._remoteControl.getPlayerSnapshot();
-    const localEntryId = snapshot.mediaInfo.entryId;
+    const localEntryId = snapshot.config.sources.id;
     if (CastPlayer._castRemotePlayer.isConnected) {
       // savedEntryId === localEntryId if this player has started casting and the page was refreshed
       const savedEntryId = this._getSessionEntryId(cast.framework.CastContext.getInstance().getCurrentSession());
