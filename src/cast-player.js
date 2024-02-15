@@ -140,7 +140,6 @@ class CastPlayer extends BaseRemotePlayer {
     return this._castMedia({mediaInfo}, options);
   }
 
-
   /**
    * Set a media to the receiver application.
    * @param {ProviderMediaConfigObject} mediaConfig - The entry media config.
@@ -691,7 +690,7 @@ class CastPlayer extends BaseRemotePlayer {
     if (this._playbackStarted) {
       this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_STARTED));
     }
-    const media = new chrome.cast.media.MediaInfo(this._sourceUrl.url);
+    const media = new chrome.cast.media.MediaInfo(this._sourceUrl);
     const request = new chrome.cast.media.LoadRequest(media);
 
     if (options) {
@@ -964,7 +963,6 @@ class CastPlayer extends BaseRemotePlayer {
   _isConnectedHandler = () => {
     const snapshot = this._remoteControl.getPlayerSnapshot();
     const localEntryId = snapshot.mediaInfo.entryId;
-
     if (CastPlayer._castRemotePlayer.isConnected) {
       // savedEntryId === localEntryId if this player has started casting and the page was refreshed
       const savedEntryId = this._getSessionEntryId(cast.framework.CastContext.getInstance().getCurrentSession());
@@ -972,12 +970,8 @@ class CastPlayer extends BaseRemotePlayer {
         this._setupRemotePlayer();
       }
     } else {
-      // savedEntryId === localEntryId if this player's cast session was stopped by the user
       this._isCastInitiator = false;
-      const savedEntryId = this._getSessionEntryId(this._castSession);
-      if (savedEntryId && savedEntryId === localEntryId) {
-        this._setupLocalPlayer();
-      }
+      this._setupLocalPlayer();
     }
   };
 
