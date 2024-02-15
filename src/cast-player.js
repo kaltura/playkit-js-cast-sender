@@ -810,6 +810,9 @@ class CastPlayer extends BaseRemotePlayer {
         this._mediaInfo = mediaSession.customData.mediaInfo;
         CastPlayer._logger.debug('Resuming session with media info', this._mediaInfo);
         this._onLoadMediaSuccess();
+      } else if (mediaSession && mediaSession.playerState.toLowerCase() === EventType.PLAYING) {
+        clearInterval(this._mediaInfoIntervalId);
+        clearTimeout(resumeSessionTimer);
       }
     }, INTERVAL_FREQUENCY);
   }
