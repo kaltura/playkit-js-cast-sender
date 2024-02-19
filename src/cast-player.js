@@ -25,6 +25,7 @@ const {
 } = remote;
 
 export const INTERVAL_FREQUENCY = 500;
+export const RESUME_MAX_RETRIES = 10;
 export const SECONDS_TO_MINUTES_DIVIDER = 60;
 export const CUSTOM_CHANNEL = 'urn:x-cast:com.kaltura.cast.playkit';
 
@@ -82,6 +83,7 @@ class CastPlayer extends BaseRemotePlayer {
   _mediaInfoIntervalId: IntervalID;
   _adsController: CastAdsController;
   _adsManager: CastAdsManager;
+  _sourceUrl: string;
 
   /**
    * Cast Sender Player.
@@ -656,6 +658,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._adsManager = new CastAdsManager(this);
     const snapshot = this._remoteControl.getPlayerSnapshot();
     this._playerConfig = snapshot.config;
+    this._sourceUrl = this._remoteControl.getPlayerSelectedSource();
     this._remoteSession = new RemoteSession(
       this._castSession.getSessionId(),
       this._castSession.getCastDevice().friendlyName,
@@ -665,7 +668,7 @@ class CastPlayer extends BaseRemotePlayer {
     this._remoteControl.onRemoteDeviceConnected(payload);
     if (this._remoteSession.resuming && !(Env.browser.major >= 73 && Env.os.name === 'Android')) {
       // Android Chrome 73 and up gets SESSION_RESUMED also in the initial session
-      this._resumeSession();
+      this._resumeSession(snapshot);
     } else if (snapshot) {
       const loadOptions = this._getLoadOptions(snapshot);
       this._loadOrSetMedia(snapshot, loadOptions);
@@ -688,7 +691,7 @@ class CastPlayer extends BaseRemotePlayer {
     if (this._playbackStarted) {
       this.dispatchEvent(new FakeEvent(EventType.CHANGE_SOURCE_STARTED));
     }
-    const media = new chrome.cast.media.MediaInfo();
+    const media = new chrome.cast.media.MediaInfo(this._sourceUrl);
     const request = new chrome.cast.media.LoadRequest(media);
 
     if (options) {
@@ -789,15 +792,25 @@ class CastPlayer extends BaseRemotePlayer {
     this._playbackStarted = true;
   }
 
-  _resumeSession(): void {
+  _resumeSession(snapshot): void {
     this._createReadyPromise();
+    let counter = 0;
     this._mediaInfoIntervalId = setInterval(() => {
+      counter++;
       const mediaSession = this._castSession.getMediaSession();
       if (mediaSession && mediaSession.customData) {
         clearInterval(this._mediaInfoIntervalId);
         this._mediaInfo = mediaSession.customData.mediaInfo;
         CastPlayer._logger.debug('Resuming session with media info', this._mediaInfo);
         this._onLoadMediaSuccess();
+      } else if (mediaSession && mediaSession.playerState.toLowerCase() === EventType.PLAYING) {
+        //there is no customData but it play on screen
+        clearInterval(this._mediaInfoIntervalId);
+        this._onLoadMediaSuccess();
+      } else if (counter >= RESUME_MAX_RETRIES) {
+        clearInterval(this._mediaInfoIntervalId);
+        const loadOptions = this._getLoadOptions(snapshot);
+        this._loadOrSetMedia(snapshot, loadOptions);
       }
     }, INTERVAL_FREQUENCY);
   }
@@ -951,7 +964,6 @@ class CastPlayer extends BaseRemotePlayer {
   _isConnectedHandler = () => {
     const snapshot = this._remoteControl.getPlayerSnapshot();
     const localEntryId = snapshot.config.sources.id;
-
     if (CastPlayer._castRemotePlayer.isConnected) {
       // savedEntryId === localEntryId if this player has started casting and the page was refreshed
       const savedEntryId = this._getSessionEntryId(cast.framework.CastContext.getInstance().getCurrentSession());
@@ -959,12 +971,8 @@ class CastPlayer extends BaseRemotePlayer {
         this._setupRemotePlayer();
       }
     } else {
-      // savedEntryId === localEntryId if this player's cast session was stopped by the user
       this._isCastInitiator = false;
-      const savedEntryId = this._getSessionEntryId(this._castSession);
-      if (savedEntryId && savedEntryId === localEntryId) {
-        this._setupLocalPlayer();
-      }
+      this._setupLocalPlayer();
     }
   };
 
@@ -985,7 +993,7 @@ class CastPlayer extends BaseRemotePlayer {
 
   _getSessionEntryId(castSession: Object) {
     if (!castSession) return null;
-    return Utils.Object.getPropertyPath(castSession.getMediaSession(), 'customData.mediaInfo.entryId');
+    return Utils.Object.getPropertyPath(castSession.getMediaSession(), 'media.customData.mediaInfo.entryId');
   }
 
   _hasInitiatedCast() {
