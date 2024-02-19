@@ -25,6 +25,8 @@ const {
 } = remote;
 
 export const INTERVAL_FREQUENCY = 500;
+export const RESUME_MAX_RETRIES = 10;
+
 export const SECONDS_TO_MINUTES_DIVIDER = 60;
 export const CUSTOM_CHANNEL = 'urn:x-cast:com.kaltura.cast.playkit';
 
@@ -793,28 +795,23 @@ class CastPlayer extends BaseRemotePlayer {
 
   _resumeSession(snapshot): void {
     this._createReadyPromise();
-    let resumeSessionTimer = setTimeout(
-      () => {
-        clearInterval(this._mediaInfoIntervalId);
-        const loadOptions = this._getLoadOptions(snapshot);
-        this._loadOrSetMedia(snapshot, loadOptions);
-      },
-      5000,
-      snapshot
-    );
+    let counter = 0;
     this._mediaInfoIntervalId = setInterval(() => {
+      counter++;
       const mediaSession = this._castSession.getMediaSession();
       if (mediaSession && mediaSession.customData) {
         clearInterval(this._mediaInfoIntervalId);
-        clearTimeout(resumeSessionTimer);
         this._mediaInfo = mediaSession.customData.mediaInfo;
         CastPlayer._logger.debug('Resuming session with media info', this._mediaInfo);
         this._onLoadMediaSuccess();
       } else if (mediaSession && mediaSession.playerState.toLowerCase() === EventType.PLAYING) {
         //there is no customData but it play on screen
         clearInterval(this._mediaInfoIntervalId);
-        clearTimeout(resumeSessionTimer);
         this._onLoadMediaSuccess();
+      } else if (counter >= RESUME_MAX_RETRIES) {
+        clearInterval(this._mediaInfoIntervalId);
+        const loadOptions = this._getLoadOptions(snapshot);
+        this._loadOrSetMedia(snapshot, loadOptions);
       }
     }, INTERVAL_FREQUENCY);
   }
