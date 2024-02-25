@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.2.7 (2024-02-25)
+
+
+### Bug Fixes
+
+* **SUP-39804:** Chromecast Not Working ([#104](https://github.com/kaltura/playkit-js-cast-sender/issues/104)) ([14b4e11](https://github.com/kaltura/playkit-js-cast-sender/commit/14b4e11))
+
+
+
 ### 1.2.6 (2023-05-17)
 
 
