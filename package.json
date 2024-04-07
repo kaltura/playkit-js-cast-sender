@@ -76,7 +76,7 @@
     "flow-bin": "^0.129.0",
     "husky": "^4.2.5",
     "istanbul": "^0.4.5",
-    "@playkit-js/kaltura-player-js": "latest",
+    "@playkit-js/kaltura-player-js": "3.17.13-canary.0-0eb945c",
     "karma": "^5.1.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^3.1.0",
@@ -103,7 +103,7 @@
     "webpack-dev-server": "^3.11.0"
   },
   "peerDependencies": {
-    "@playkit-js/kaltura-player-js": "latest"
+    "@playkit-js/kaltura-player-js": "3.17.13-canary.0-0eb945c"
   },
   "publishConfig": {
     "access": "public"

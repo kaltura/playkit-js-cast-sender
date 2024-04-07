@@ -1,5 +1,6 @@
 // @flow
-import {cast as remote, core} from '@playkit-js/kaltura-player-js';
+/** @jsx h */
+import {cast as remote, core, ui} from '@playkit-js/kaltura-player-js';
 import {CastStateManager} from './cast-state-manager';
 import {CastTracksManager} from './cast-tracks-manager';
 import {CastPlaybackEngine} from './cast-playback-engine';
@@ -7,6 +8,11 @@ import {CastUI} from './cast-ui';
 import {CastLoader} from './cast-loader';
 import {CastAdsController} from './cast-ads-controller';
 import {CastAdsManager} from './cast-ads-manager';
+
+// eslint-disable-next-line no-unused-vars
+const {h} = ui;
+// eslint-disable-next-line no-unused-vars
+const {Text} = ui.preacti18n;
 
 const {Env, Track, TextStyle, EventType, StateType, FakeEvent, Utils, EngineType, AbrMode, Error} = core;
 const {
@@ -840,8 +846,12 @@ class CastPlayer extends BaseRemotePlayer {
 
   _onLoadMediaFailed(error: Object): void {
     CastPlayer._logger.debug('Load media falied', error);
+    const errorDetails = {
+      errorTitle: <Text id={'cast.error_title'} />,
+      errorMessage: <Text id={'cast.error_message'} />
+    };
     this.dispatchEvent(
-      new FakeEvent(EventType.ERROR, new Error(Error.Severity.CRITICAL, Error.Category.CAST, Error.Code.CAST_LOAD_MEDIA_FAILED, error))
+      new FakeEvent(EventType.ERROR, new Error(Error.Severity.CRITICAL, Error.Category.CAST, Error.Code.CAST_LOAD_MEDIA_FAILED, error, errorDetails))
     );
   }
 
