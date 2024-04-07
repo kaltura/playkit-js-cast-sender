@@ -1,0 +1,8 @@
+{
+  "en": {
+    "cast_sender": {
+      "error_title": "Media casting error",
+      "error_message": "An error occurred while trying to cast, please try again."
+    }
+  }
+}
