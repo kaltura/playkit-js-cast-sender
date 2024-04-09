@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.3.0 (2024-04-09)
+
+
+### Features
+
+* **FEC-13652:** add meaningful error message ([#105](https://github.com/kaltura/playkit-js-cast-sender/issues/105)) ([7cda458](https://github.com/kaltura/playkit-js-cast-sender/commit/7cda458))
+
+
+
 ### 1.2.7 (2024-02-25)
 
 
