@@ -1,5 +1,5 @@
 {
-  "ca": {
+  "ca_es": {
     "cast": {
       "error_title": "Error en la transmissió de mitjans",
       "error_message": "S'ha produït un error en intentar transmetre, torneu-ho a provar."
