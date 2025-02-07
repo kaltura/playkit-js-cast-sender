@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.4.0 (2025-02-07)
+
+
+### Features
+
+* **FEC-14239:** Rename Catalan locale from ca to ca_es ([#107](https://github.com/kaltura/playkit-js-cast-sender/issues/107)) ([f261507](https://github.com/kaltura/playkit-js-cast-sender/commit/f261507))
+
+
+
 ## 1.3.0 (2024-04-09)
 
 
