@@ -1,0 +1,84 @@
+{
+  "repositoryName": "playkit-js-cast-sender",
+  "coreResponsibility": "A Chromecast sender plugin that integrates the Google Cast Chrome Sender Framework API with the Kaltura Player JS, enabling users to cast media playback from a Chrome browser to Chromecast-enabled devices.",
+  "domainOwnership": {
+    "featureOwnership": [
+      "Chromecast session management (connect, disconnect, resume)",
+      "Remote media loading and playback control on Chromecast receiver",
+      "Cast playback state synchronization between sender and receiver",
+      "Track management during casting (audio, video, text/subtitles)",
+      "Text track styling and customization during casting",
+      "Volume and mute control on remote device",
+      "Live streaming and DVR support during casting",
+      "Advertising support during cast sessions (VAST/VMAP)",
+      "Cast UI presets for playback, live, ads, and idle states",
+      "Custom message channel communication between sender and receiver"
+    ],
+    "dataHandling": [
+      "Cast session state (connected, disconnected, resuming)",
+      "Remote player state machine (idle, playing, paused, buffering)",
+      "Media info and configuration for cast receiver",
+      "Track metadata (audio, video, text tracks)",
+      "Playback position and duration synchronization",
+      "Volume level and mute state",
+      "Text style settings for captions",
+      "Ad break state during casting"
+    ]
+  },
+  "integrationPoints": {
+    "upstream": [
+      "@playkit-js/kaltura-player-js - Core player framework and remote player base classes",
+      "Google Cast Chrome Sender Framework SDK - Cast functionality and API"
+    ],
+    "downstream": [
+      "Kaltura Player JS UI - Consumes cast UI presets",
+      "playkit-js-cast-receiver - Receives media load requests and playback commands",
+      "Web applications using Kaltura Player - Enables Chromecast functionality"
+    ]
+  },
+  "externalAPIs": [
+    "Google Cast Chrome Sender Framework API (cast.framework.*)",
+    "Chrome Cast SDK (chrome.cast.*)",
+    "Kaltura Player JS Remote Framework (BaseRemotePlayer, RemoteControl, RemoteSession)",
+    "Kaltura Player JS Core (EventType, Track, TextStyle, State)"
+  ],
+  "technicalStack": {
+    "primaryLanguages": ["JavaScript (ES6+)", "Flow (static typing)"],
+    "frameworks": ["Preact (for UI components)"],
+    "buildTools": ["Webpack", "Babel"],
+    "testingTools": ["Karma", "Mocha", "Chai", "Sinon"],
+    "entryPoints": [
+      "src/index.js - Main entry point, registers CastPlayer as remote player",
+      "src/cast-player.js - Core CastPlayer class extending BaseRemotePlayer",
+      "src/cast-loader.js - Loads Google Cast SDK",
+      "src/cast-state-manager.js - Manages cast playback state",
+      "src/cast-tracks-manager.js - Manages audio/video/text tracks during casting",
+      "src/cast-playback-engine.js - Controls playback on remote device",
+      "src/cast-ads-controller.js - Ad control during casting",
+      "src/cast-ui.js - UI presets for cast states",
+      "flow-typed/cast-config.js - Cast configuration type definitions"
+    ]
+  },
+  "triageKeywords": [
+    "chromecast",
+    "cast sender",
+    "google cast",
+    "casting not working",
+    "cast button",
+    "remote player",
+    "cast session",
+    "cast.framework",
+    "chrome.cast",
+    "CastPlayer",
+    "cast receiver connection",
+    "chromecast tracks",
+    "cast subtitles",
+    "cast volume",
+    "cast DVR",
+    "cast live stream",
+    "CAST_LOAD_MEDIA_FAILED",
+    "EDIT_TRACKS_INFO_ERROR",
+    "cast disconnected",
+    "onGCastApiAvailable"
+  ]
+}
