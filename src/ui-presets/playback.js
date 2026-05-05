@@ -45,8 +45,7 @@ class PlaybackUI extends Component {
                   Components.ForwardControl,
                   Components.TimeDisplayPlaybackContainer
                 ]}
-                //todo:missing component.LanguageControl
-                rightControls={[Components.VolumeControl, Components.SettingsControl, Components.CastControl, Components.FullscreenControl]}>
+                rightControls={[Components.VolumeControl, Components.CaptionsMenu, Components.SettingsControl, Components.CastControl, Components.FullscreenControl]}>
                 <Components.SeekBarPlaybackContainer showFramePreview showTimeBubble playerContainer={this.props.playerContainer} />
               </Components.BottomBar>
             </Fragment>
