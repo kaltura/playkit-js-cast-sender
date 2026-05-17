@@ -905,9 +905,7 @@ class CastPlayer extends BaseRemotePlayer {
           const activeTracks = localPlayer.getActiveTracks();
           if (activeTracks.text && activeTracks.text.language && activeTracks.text.language !== 'off') {
             // Find the matching track ID in externalCaptions
-            const activeCaption = externalCaptions.find(
-              caption => caption.language === activeTracks.text.language
-            );
+            const activeCaption = externalCaptions.find(caption => caption.language === activeTracks.text.language);
             if (activeCaption) {
               loadOptions.activeTrackIds = [activeCaption.trackId];
               CastPlayer._logger.debug('Setting active text track', {language: activeTracks.text.language, trackId: activeCaption.trackId});
@@ -931,7 +929,7 @@ class CastPlayer extends BaseRemotePlayer {
       if (localPlayer && localPlayer.getTracks) {
         const textTracks = localPlayer.getTracks('TEXT');
         if (textTracks && textTracks.length > 0) {
-          textTracks.forEach((track) => {
+          textTracks.forEach(track => {
             if (track.language && track.language !== 'off') {
               // Get track URL - Kaltura caption assets have URLs in the track object
               const trackUrl = track.url || track.src || track.trackContentId;
@@ -958,7 +956,7 @@ class CastPlayer extends BaseRemotePlayer {
 
     // Fallback: get captions from player config if no tracks were found from player
     if (externalCaptions.length === 0 && this._playerConfig.sources.captions && this._playerConfig.sources.captions.length) {
-      this._playerConfig.sources.captions.forEach((caption) => {
+      this._playerConfig.sources.captions.forEach(caption => {
         if (caption.type === 'vtt' || caption.url.endsWith('.vtt')) {
           const newTrack = new chrome.cast.media.Track(trackIndex++, chrome.cast.media.TrackType.TEXT);
           Utils.Object.mergeDeep(newTrack, {
