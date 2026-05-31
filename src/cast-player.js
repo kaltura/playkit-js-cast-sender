@@ -728,7 +728,7 @@ class CastPlayer extends BaseRemotePlayer {
     CastPlayer._logger.debug('Setup local player');
     const snapshot = new PlayerSnapshot(this);
     const payload = new RemoteDisconnectedPayload(this, snapshot);
-    this.pause();
+    // this.pause();
     this._cleanSessionData();
     this._remoteControl.onRemoteDeviceDisconnected(payload);
   }
