@@ -896,86 +896,30 @@ class CastPlayer extends BaseRemotePlayer {
       }
     }
     const externalCaptions = this._getExternalCaptions();
-    if (externalCaptions.length) {
-      loadOptions.media.tracks = externalCaptions;
-
-      // Set active text track if one is currently selected in the local player
-      try {
-        const localPlayer = this._remoteControl.getPlayer();
-        if (localPlayer && localPlayer.getActiveTracks) {
-          const activeTracks = localPlayer.getActiveTracks();
-          if (activeTracks.text && activeTracks.text.language && activeTracks.text.language !== 'off') {
-            // Find the matching track ID in externalCaptions
-            const activeCaption = externalCaptions.find(caption => caption.language === activeTracks.text.language);
-            if (activeCaption) {
-              loadOptions.activeTrackIds = [activeCaption.trackId];
-              CastPlayer._logger.debug('Setting active text track', {language: activeTracks.text.language, trackId: activeCaption.trackId});
-            }
-          }
-        }
-      } catch (e) {
-        CastPlayer._logger.debug('Could not get active text track from local player', e);
-      }
-    }
+    externalCaptions.length && (loadOptions.media.tracks = externalCaptions);
     return loadOptions;
   }
 
   _getExternalCaptions() {
     const externalCaptions = [];
-    let trackIndex = 1;
-
-    // Try to get text tracks from the local player (includes Kaltura caption assets)
-    try {
-      const localPlayer = this._remoteControl.getPlayer();
-      if (localPlayer && localPlayer.getTracks) {
-        const textTracks = localPlayer.getTracks('TEXT');
-        if (textTracks && textTracks.length > 0) {
-          textTracks.forEach(track => {
-            if (track.language && track.language !== 'off') {
-              // Get track URL - Kaltura caption assets have URLs in the track object
-              const trackUrl = track.url || track.src || track.trackContentId;
-              if (trackUrl && trackUrl.startsWith('http')) {
-                // This is an external track (not embedded in manifest)
-                const newTrack = new chrome.cast.media.Track(trackIndex++, chrome.cast.media.TrackType.TEXT);
-                Utils.Object.mergeDeep(newTrack, {
-                  trackContentId: trackUrl,
-                  trackContentType: 'text/vtt',
-                  subtype: track.kind || 'subtitles',
-                  name: track.label || track.language,
-                  language: track.language
-                });
-                externalCaptions.push(newTrack);
-                CastPlayer._logger.debug('Added text track from player', {label: track.label, language: track.language, url: trackUrl});
-              }
-            }
-          });
-        }
-      }
-    } catch (e) {
-      CastPlayer._logger.debug('Could not get text tracks from local player', e);
-    }
-
-    // Fallback: get captions from player config if no tracks were found from player
-    if (externalCaptions.length === 0 && this._playerConfig.sources.captions && this._playerConfig.sources.captions.length) {
-      this._playerConfig.sources.captions.forEach(caption => {
+    if (this._playerConfig.sources.captions && this._playerConfig.sources.captions.length) {
+      this._playerConfig.sources.captions.forEach((caption, index) => {
         if (caption.type === 'vtt' || caption.url.endsWith('.vtt')) {
-          const newTrack = new chrome.cast.media.Track(trackIndex++, chrome.cast.media.TrackType.TEXT);
+          let newTrack;
+          newTrack = new chrome.cast.media.Track(index + 1, chrome.cast.media.TrackType.TEXT);
           Utils.Object.mergeDeep(newTrack, {
             trackContentId: caption.url,
             trackContentType: 'text/vtt',
-            subtype: caption.kind || 'subtitles',
             name: caption.label,
             language: caption.language
           });
           externalCaptions.push(newTrack);
-          CastPlayer._logger.debug('Added text track from config', {label: caption.label, language: caption.language});
         } else {
           CastPlayer._logger.warn(`Text track type ${caption.type} is unsupported by Cast receiver`);
         }
       });
     }
 
-    CastPlayer._logger.debug('External captions to send to cast receiver', externalCaptions);
     return externalCaptions;
   }
 
