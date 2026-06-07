@@ -30,7 +30,8 @@ class CastTracksManager extends FakeEventTarget {
   }
 
   parseTracks(): void {
-    const tracks = this._remotePlayer.mediaInfo.tracks;
+    const mediaSession = this._castSession.getMediaSession();
+    const tracks = mediaSession?.media?.tracks || this._remotePlayer.mediaInfo?.tracks;
     if (tracks && tracks.length > 0) {
       const castTextTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.TEXT);
       const castVideoTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.VIDEO);
@@ -311,6 +312,15 @@ class CastTracksManager extends FakeEventTarget {
   _onMediaStatusUpdate(): void {
     const mediaSession = this._castSession.getMediaSession();
     if (mediaSession) {
+      const isTracksAvailable = () => {
+        const mediaTracks = mediaSession.media?.tracks;
+        if (!mediaTracks || mediaTracks.length === 0) {
+          return false;
+        }
+        const remoteTextTracks = mediaTracks.filter(t => t.type === chrome.cast.media.TrackType.TEXT);
+        const localTextTracks = this._tracks.filter(t => t.kind === 'subtitles' && t.language !== 'off');
+        return remoteTextTracks.length > 0 && localTextTracks.length === 0;
+      };
       const isTextStyleChanged = () => {
         const localTextStyle = TextStyleConverter.toCastTextStyle(this.textStyle);
         const remoteTextStyle = mediaSession.media.textTrackStyle;
@@ -333,6 +343,10 @@ class CastTracksManager extends FakeEventTarget {
         }
         return false;
       };
+      if (isTracksAvailable()) {
+        this._logger.debug('Tracks became available, re-parsing');
+        this.parseTracks();
+      }
       if (isActiveTrackIdsChanged()) {
         const diffIds = mediaSession.activeTrackIds.filter(i => !this._activeTrackIds.includes(i));
         diffIds.forEach(id => {
