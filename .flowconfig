@@ -5,3 +5,4 @@
 ./src/
 [options]
 esproposal.decorators=ignore
+esproposal.optional_chaining=enable
