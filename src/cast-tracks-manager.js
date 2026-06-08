@@ -31,7 +31,7 @@ class CastTracksManager extends FakeEventTarget {
 
   parseTracks(): void {
     const mediaSession = this._castSession.getMediaSession();
-    const tracks = mediaSession?.media?.tracks || this._remotePlayer.mediaInfo?.tracks;
+    const tracks = mediaSession?.media.tracks || this._remotePlayer.mediaInfo.tracks;
     if (tracks && tracks.length > 0) {
       const castTextTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.TEXT);
       const castVideoTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.VIDEO);
