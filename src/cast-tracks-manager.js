@@ -312,8 +312,8 @@ class CastTracksManager extends FakeEventTarget {
   _onMediaStatusUpdate(): void {
     const mediaSession = this._castSession.getMediaSession();
     if (mediaSession) {
-      const isTracksAvailable = () => {
-        const mediaTracks = mediaSession.media?.tracks;
+      const isTextTracksAvailable = () => {
+        const mediaTracks = mediaSession.media.tracks;
         if (!mediaTracks || mediaTracks.length === 0) {
           return false;
         }
@@ -343,7 +343,7 @@ class CastTracksManager extends FakeEventTarget {
         }
         return false;
       };
-      if (isTracksAvailable()) {
+      if (isTextTracksAvailable()) {
         this.parseTracks();
       }
       if (isActiveTrackIdsChanged()) {
