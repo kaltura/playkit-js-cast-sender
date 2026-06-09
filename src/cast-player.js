@@ -728,7 +728,6 @@ class CastPlayer extends BaseRemotePlayer {
     CastPlayer._logger.debug('Setup local player');
     const snapshot = new PlayerSnapshot(this);
     const payload = new RemoteDisconnectedPayload(this, snapshot);
-    this.pause();
     this._cleanSessionData();
     this._remoteControl.onRemoteDeviceDisconnected(payload);
   }
@@ -830,16 +829,18 @@ class CastPlayer extends BaseRemotePlayer {
   }
 
   _triggerInitialPlayerEvents(): void {
-    this.dispatchEvent(
-      new FakeEvent(EventType.SOURCE_SELECTED, {
-        selectedSource: [
-          {
-            url: CastPlayer._castRemotePlayer.mediaInfo.contentUrl,
-            mimetype: CastPlayer._castRemotePlayer.mediaInfo.contentType
-          }
-        ]
-      })
-    );
+    if (CastPlayer._castRemotePlayer.mediaInfo) {
+      this.dispatchEvent(
+        new FakeEvent(EventType.SOURCE_SELECTED, {
+          selectedSource: [
+            {
+              url: CastPlayer._castRemotePlayer.mediaInfo.contentUrl,
+              mimetype: CastPlayer._castRemotePlayer.mediaInfo.contentType
+            }
+          ]
+        })
+      );
+    }
     this.dispatchEvent(new FakeEvent(EventType.LOADED_METADATA));
     this.dispatchEvent(new FakeEvent(EventType.ABR_MODE_CHANGED, {mode: AbrMode.AUTO}));
   }
