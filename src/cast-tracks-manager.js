@@ -31,7 +31,7 @@ class CastTracksManager extends FakeEventTarget {
 
   parseTracks(): void {
     const mediaSession = this._castSession.getMediaSession();
-    const tracks = mediaSession?.media.tracks || this._remotePlayer.mediaInfo.tracks;
+    const tracks = mediaSession?.media?.tracks || this._remotePlayer.mediaInfo?.tracks;
     if (tracks && tracks.length > 0) {
       const castTextTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.TEXT);
       const castVideoTracks = tracks.filter(t => t.type === chrome.cast.media.TrackType.VIDEO);
@@ -91,7 +91,7 @@ class CastTracksManager extends FakeEventTarget {
     const textTrackStyle = TextStyleConverter.toCastTextStyle(style);
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(null, textTrackStyle);
     const mediaSession = this._castSession.getMediaSession();
-    mediaSession.editTracksInfo(
+    mediaSession?.editTracksInfo(
       tracksInfoRequest,
       () => {
         this._logger.debug('Setting text style succeed');
@@ -258,7 +258,7 @@ class CastTracksManager extends FakeEventTarget {
     }
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this._activeTrackIds);
     const mediaSession = this._castSession.getMediaSession();
-    mediaSession.editTracksInfo(
+    mediaSession?.editTracksInfo(
       tracksInfoRequest,
       () => {
         this._logger.debug('Select track succeeded');
@@ -313,7 +313,7 @@ class CastTracksManager extends FakeEventTarget {
     const mediaSession = this._castSession.getMediaSession();
     if (mediaSession) {
       const isTextTracksAvailable = () => {
-        const mediaTracks = mediaSession.media.tracks;
+        const mediaTracks = mediaSession.media?.tracks;
         if (!mediaTracks || mediaTracks.length === 0) {
           return false;
         }
@@ -323,7 +323,7 @@ class CastTracksManager extends FakeEventTarget {
       };
       const isTextStyleChanged = () => {
         const localTextStyle = TextStyleConverter.toCastTextStyle(this.textStyle);
-        const remoteTextStyle = mediaSession.media.textTrackStyle;
+        const remoteTextStyle = mediaSession.media?.textTrackStyle;
         if (remoteTextStyle) {
           return !(
             localTextStyle.backgroundColor === remoteTextStyle.backgroundColor &&
@@ -354,7 +354,7 @@ class CastTracksManager extends FakeEventTarget {
         });
       }
       if (isTextStyleChanged()) {
-        const style = TextStyleConverter.toPlayerTextStyle(mediaSession.media.textTrackStyle);
+        const style = TextStyleConverter.toPlayerTextStyle(mediaSession.media?.textTrackStyle);
         this._textStyle = style;
         this.dispatchEvent(new FakeEvent(EventType.TEXT_STYLE_CHANGED, {textStyle: style}));
       }
