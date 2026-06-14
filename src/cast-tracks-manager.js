@@ -91,7 +91,7 @@ class CastTracksManager extends FakeEventTarget {
     const textTrackStyle = TextStyleConverter.toCastTextStyle(style);
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(null, textTrackStyle);
     const mediaSession = this._castSession.getMediaSession();
-    mediaSession.editTracksInfo(
+    mediaSession?.editTracksInfo(
       tracksInfoRequest,
       () => {
         this._logger.debug('Setting text style succeed');
@@ -258,7 +258,7 @@ class CastTracksManager extends FakeEventTarget {
     }
     const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this._activeTrackIds);
     const mediaSession = this._castSession.getMediaSession();
-    mediaSession.editTracksInfo(
+    mediaSession?.editTracksInfo(
       tracksInfoRequest,
       () => {
         this._logger.debug('Select track succeeded');
