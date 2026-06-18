@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.4.1 (2026-06-18)
+
+
+### Bug Fixes
+
+* **SUP-52188:** Enabling captions on Chromecast ([#114](https://github.com/kaltura/playkit-js-cast-sender/issues/114)) ([ba42bbc](https://github.com/kaltura/playkit-js-cast-sender/commit/ba42bbc))
+
+
+
 ## 1.4.0 (2025-02-07)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@playkit-js/playkit-js-cast-sender",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "keywords": [
     "cast",
     "google cast sdk",
@@ -22,7 +22,7 @@
   "license": "AGPL-3.0",
   "main": "dist/playkit-cast-sender.js",
   "scripts": {
-    "preinstall": "npx --yes --prefer-online --registry=https://npm.pkg.github.com --package @kaltura/kaltura-tools@latest kaltura-tools check --root=.",
+    "disabled-preinstall": "npx --yes --prefer-online --registry=https://npm.pkg.github.com --package @kaltura/kaltura-tools@latest kaltura-tools check --root=.",
     "prebuild": "npm run clean",
     "build": "webpack --mode production",
     "clean": "rm -rf ./dist",
